@@ -8,6 +8,7 @@ import sharp from "sharp";
 import Admins from "./collections/Admins";
 import Users from "./collections/Users";
 import Media from "./collections/Media";
+import Categories from "./collections/Categories";
 
 
 const filename = fileURLToPath(import.meta.url);
@@ -33,7 +34,7 @@ export default buildConfig({
   defaultFromAddress: process.env.EMAIL_FROM_ADDRESS!,
   defaultFromName: process.env.EMAIL_FROM_NAME!,
   }),
-  collections: [Users, Media,Admins],
+  collections: [Users, Media,Admins,Categories],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || "",
   typescript: {

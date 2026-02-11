@@ -3,10 +3,27 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --font-space-grotesk: ; /* Next.js yahan value inject karta hai */
+  --font-dm-sans: ;
+  ----font-roboto:;
+}
+
+@layer utilities {
+  .font-spacegro {
+    font-family: var(--font-space-grotesk); /* seedha Next.js wala variable */
+  }
+   .font-dm-sans {
+    font-family: var(--font-space-grotesk); /* seedha Next.js wala variable */
+  }
+   .font-roboto {
+    font-family: var(--font-space-grotesk); /* seedha Next.js wala variable */
+  }
+}
 :root {
   --background: oklch(93.46% 0.0305 255.11);
   --secondary-background: oklch(100% 0 0);
-  --font-sans:var(--font-dm-sans);
+ 
   --foreground: oklch(0% 0 0);
   --main-foreground: oklch(0% 0 0);
   --main: oklch(67.47% 0.1726 259.49);
