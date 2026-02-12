@@ -1,14 +1,9 @@
-"use client"
-import { useEffect, useState } from "react"
+import SearchFilter from "@/components/Share/search-filter";
 
 export default function Page() {
-  const [data, setData] = useState(null)
-
-  useEffect(() => {
-    fetch("/api/categories")
-      .then(res => res.json())
-      .then(setData)
-  }, [])
-
-  return <pre>{JSON.stringify(data, null, 2)}</pre>
+  return (
+    <div className="flex flex-col h-auto lg:h-32 bg-white w-full ">
+      <SearchFilter />
+    </div>
+  );
 }

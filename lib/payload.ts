@@ -1,31 +1,43 @@
-import { getPayload } from 'payload'
-import config from '@payload-config' 
+import { getPayload, type Payload } from "payload";
+import config from "@payload-config";
 
 /**
- * Global variable to cache the payload instance in development.
- * This prevents multiple initializations during Hot Module Replacement (HMR).
+ * Extend globalThis to store cached payload instance
  */
-let cached = (global as any).payload
-
-if (!cached) {
-  cached = (global as any).payload = { client: null, promise: null }
+declare global {
+  // eslint-disable-next-line no-var
+  var payloadClient:
+    | {
+        client: Payload | null;
+        promise: Promise<Payload> | null;
+      }
+    | undefined;
 }
 
-export const getPayloadClient = async () => {
+if (!globalThis.payloadClient) {
+  globalThis.payloadClient = {
+    client: null,
+    promise: null,
+  };
+}
+
+export const getPayloadClient = async (): Promise<Payload> => {
+  const cached = globalThis.payloadClient!;
+
   if (cached.client) {
-    return cached.client
+    return cached.client;
   }
 
   if (!cached.promise) {
-    cached.promise = getPayload({ config })
+    cached.promise = getPayload({ config });
   }
 
   try {
-    cached.client = await cached.promise
-  } catch (e) {
-    cached.promise = null
-    throw e
+    cached.client = await cached.promise;
+  } catch (error) {
+    cached.promise = null;
+    throw error;
   }
 
-  return cached.client
-}
+  return cached.client;
+};
