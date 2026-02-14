@@ -1,26 +1,20 @@
 // src/adapters/cloudinaryAdapter.ts
 import type { Adapter, GeneratedAdapter } from '@payloadcms/plugin-cloud-storage/types'
-import path from 'path'
-import fs from 'fs'
 import cloudinary from '@/lib/cloudinary'
 import { UploadApiResponse } from 'cloudinary'
-import { PayloadRequest } from 'payload'
 import { getStaticHandler } from './hooks/staticHandler'
+import { FileDataWithCloudinary } from './types'
 
 export interface CloudinaryAdapterArgs {
   cloudName: string
-  apiKey: string
-  apiSecret: string
   folder?: string
 }
 
 export const cloudinaryAdapter = ({
   cloudName,
-  apiKey,
-  apiSecret,
   folder = 'payload-uploads',
 }: CloudinaryAdapterArgs): Adapter => {
-  return ({ collection, prefix }): GeneratedAdapter => {
+  return ({ collection }): GeneratedAdapter => {
     const folderPath = folder
 
     return {
@@ -87,11 +81,12 @@ export const cloudinaryAdapter = ({
       },
 
       // ✅ Delete file from Cloudinary
-      handleDelete: async ({ doc, filename }) => {
+      handleDelete: async ({ doc }) => {
         try {
           // Get public_id from doc
-          const publicId = doc?.cloudinary?.public_id
-          const resourceType = doc?.cloudinary?.resource_type || 'image'
+          const docData = doc as FileDataWithCloudinary
+          const publicId = docData?.cloudinary?.public_id
+          const resourceType = docData?.cloudinary?.resource_type || 'image'
 
           if (!publicId) {
             console.warn('⚠️ No public_id found for deletion')
@@ -115,7 +110,7 @@ export const cloudinaryAdapter = ({
       },
 
       // ✅ Generate URL (for accessing the file)
-      generateURL: ({ filename, prefix }) => {
+      generateURL: ({ filename }) => {
         // URL is already stored in doc.url from handleUpload
         // This is a fallback if needed
         return `https://res.cloudinary.com/${cloudName}/image/upload/${folderPath}/${filename}`

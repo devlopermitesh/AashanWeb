@@ -1,4 +1,4 @@
-
+import { FileData, TypeWithID } from 'payload'
 
 export interface CloudinaryFile {
   public_id: string
@@ -10,4 +10,8 @@ export interface CloudinaryFile {
   height?: number
   bytes: number
   created_at: string
+}
+
+export interface FileDataWithCloudinary extends FileData, TypeWithID {
+  cloudinary?: CloudinaryFile
 }

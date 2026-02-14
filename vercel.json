@@ -1,10 +1,12 @@
 {
   "buildCommand": "npm install --legacy-peer-deps && npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"],
   "env": {
-    "NODE_OPTIONS": "--no-deprecation"
+    "NODE_OPTIONS": "--no-deprecation",
+    "SKIP_ENV_VALIDATION": "1"
   },
   "functions": {
     "app/api/**/*.ts": {
