@@ -3,7 +3,7 @@ import type { Adapter, GeneratedAdapter } from '@payloadcms/plugin-cloud-storage
 import cloudinary from '@/lib/cloudinary'
 import { UploadApiResponse } from 'cloudinary'
 import { getStaticHandler } from './hooks/staticHandler'
-import { DocWithCloudinary } from './types'
+import { FileDataWithCloudinary } from './types'
 
 export interface CloudinaryAdapterArgs {
   cloudName: string
@@ -84,7 +84,7 @@ export const cloudinaryAdapter = ({
       handleDelete: async ({ doc }) => {
         try {
           // Get public_id from doc
-          const docData = doc as DocWithCloudinary
+          const docData = doc as FileDataWithCloudinary
           const publicId = docData?.cloudinary?.public_id
           const resourceType = docData?.cloudinary?.resource_type || 'image'
 

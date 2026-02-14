@@ -1,3 +1,5 @@
+import { FileData, TypeWithID } from 'payload'
+
 export interface CloudinaryFile {
   public_id: string
   secure_url: string
@@ -10,7 +12,6 @@ export interface CloudinaryFile {
   created_at: string
 }
 
-export interface DocWithCloudinary {
+export interface FileDataWithCloudinary extends FileData, TypeWithID {
   cloudinary?: CloudinaryFile
-  [key: string]: unknown
 }
