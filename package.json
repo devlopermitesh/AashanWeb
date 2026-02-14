@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generateType": "payload generate:types --output payload-types.ts"
+    "generateType": "payload generate:types --output payload-types.ts",
+    "vercel-build": "npx payload migrate && next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.3",
@@ -50,8 +51,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@typescript-eslint/eslint-plugin": "^8.55.0",
-    "@typescript-eslint/parser": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "8.54.0",
+    "@typescript-eslint/parser": "8.54.0",
     "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
