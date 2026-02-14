@@ -144,6 +144,38 @@ export interface User {
 export interface Media {
   id: string;
   alt: string;
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Cloudinary metadata
+   */
+  cloudinary?: {
+    public_id?: string | null;
+    version?: number | null;
+    signature?: string | null;
+    width?: number | null;
+    height?: number | null;
+    format?: string | null;
+    resource_type?: ('image' | 'video' | 'raw') | null;
+    created_at?: string | null;
+    bytes?: number | null;
+    type?: string | null;
+    url?: string | null;
+    secure_url?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -155,6 +187,32 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    feature?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -302,6 +360,23 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
+  cloudinary?:
+    | T
+    | {
+        public_id?: T;
+        version?: T;
+        signature?: T;
+        width?: T;
+        height?: T;
+        format?: T;
+        resource_type?: T;
+        created_at?: T;
+        bytes?: T;
+        type?: T;
+        url?: T;
+        secure_url?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -313,6 +388,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        feature?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
