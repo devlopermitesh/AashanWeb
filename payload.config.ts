@@ -9,7 +9,6 @@ import Admins from './collections/Admins'
 import Users from './collections/Users'
 import { Media } from './collections/Media'
 import Categories from './collections/Categories'
-import { injectCollectionPlugin, myPlugin } from './adapters/myPlugin'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { cloudinaryAdapter } from './adapters/cloudinary'
 
@@ -53,8 +52,6 @@ export default buildConfig({
         media: {
           adapter: cloudinaryAdapter({
             cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
-            apiKey: process.env.CLOUDINARY_API_KEY!,
-            apiSecret: process.env.CLOUDINARY_API_SECRET!,
             folder: 'media',
           }),
           disableLocalStorage: true, // Don't save files locally

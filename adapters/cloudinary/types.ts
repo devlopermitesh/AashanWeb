@@ -1,5 +1,3 @@
-
-
 export interface CloudinaryFile {
   public_id: string
   secure_url: string
@@ -10,4 +8,9 @@ export interface CloudinaryFile {
   height?: number
   bytes: number
   created_at: string
+}
+
+export interface DocWithCloudinary {
+  cloudinary?: CloudinaryFile
+  [key: string]: unknown
 }
