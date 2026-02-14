@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm vercel-build",
+  "buildCommand": "npm install --legacy-peer-deps && npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"],
