@@ -13,31 +13,21 @@
     "lint-staged": "lint-staged",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json,css,md}",
     "generateType": "payload generate:types --output payload-types.ts",
-    "vercel-build": "npx payload migrate && next build",
+    "vercel-build": "payload migrate && next build",
     "prepare": "husky install || true"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,css}": [
-      "prettier --write"
-    ]
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.3",
-    "@payloadcms/db-mongodb": "3.76.1",
-    "@payloadcms/email-nodemailer": "3.76.1",
-    "@payloadcms/next": "3.76.1",
-    "@payloadcms/plugin-cloud-storage": "3.76.1",
-    "@payloadcms/richtext-lexical": "3.76.1",
+    "@payloadcms/db-mongodb": "3.75.0",
+    "@payloadcms/email-nodemailer": "3.75.0",
+    "@payloadcms/next": "3.75.0",
+    "@payloadcms/plugin-cloud-storage": "3.75.0",
+    "@payloadcms/richtext-lexical": "3.75.0",
     "cloudinary": "^2.9.0",
-    "commitlint": "^20.4.1",
     "graphql": "^16.8.1",
     "next": "16.1.6",
     "nodemailer": "^8.0.0",
-    "payload": "3.76.1",
+    "payload": "3.75.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zod": "^4.3.6"
