@@ -5,12 +5,9 @@ import { ChartNoAxesGantt } from "lucide-react";
 import { Category } from "@/payload-types";
 import CategoryItem from "./CategoryItem";
 import { cn } from "@/lib/utils";
-import CategoriesMenu from "./CategoriesMenu";
 import SideCategoriesMenu from "./CategoriesMenu";
-
-interface CategoriesProps {
-  data: Category[];
-}
+import { useTRPC } from "@/components/providers/TrcpProvider";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 const CATEGORY_GAP = 20; // Configurable gap between categories
 
@@ -26,8 +23,11 @@ const AllCategory: Category = {
   },
 };
 
-const Categories = ({ data }: CategoriesProps) => {
+const Categories = () => {
   const activeCategory = "all";
+
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions());
 
   // Refs for measuring and container elements
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -149,7 +149,7 @@ const Categories = ({ data }: CategoriesProps) => {
         ))}
 
         {/* View All button - positioned at the end */}
-        <SideCategoriesMenu data={data}>
+        <SideCategoriesMenu>
           <div ref={viewAllButtonRef} className="ml-auto shrink-0">
             <button
               className={cn(

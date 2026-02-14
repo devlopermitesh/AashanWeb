@@ -5,10 +5,13 @@ import { Category } from "@/payload-types";
 import { ChartNoAxesGantt, Search } from "lucide-react";
 import { useState } from "react";
 import SideCategoriesMenu from "./CategoriesMenu";
+import { useTRPC } from "@/components/providers/TrcpProvider";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 
-const SearchInput = ({ data }: { data: Category[] }) => {
+const SearchInput = () => {
   const [search, setSearch] = useState("");
-
+  const trpc = useTRPC(); 
+   const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions());
   return (
     <div className="relative w-full flex gap-2">
       {/* Icon */}
@@ -22,7 +25,7 @@ const SearchInput = ({ data }: { data: Category[] }) => {
         onChange={(e) => setSearch(e.target.value)}
         className="pl-10 h-10"
       />
-      <SideCategoriesMenu data={data}>
+      <SideCategoriesMenu >
         <Button
           variant={"noShadow"}
           className="flex lg:hidden bg-white border-gray-600"

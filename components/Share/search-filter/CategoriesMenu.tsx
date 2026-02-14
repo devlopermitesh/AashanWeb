@@ -1,5 +1,6 @@
 "use client";
 
+import { useTRPC } from "@/components/providers/TrcpProvider";
 import {
   Sheet,
   SheetContent,
@@ -8,12 +9,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Category } from "@/payload-types";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface CategoriesMenuProps {
   children: React.ReactNode;
-  data: Category[];
   className?: string;
 }
 
@@ -34,13 +35,12 @@ const ParentCategory = ({ name, color, onClick }: ParentCategoryProps) => {
   );
 };
 
-const SideCategoriesMenu = ({
-  children,
-  data,
-  className,
-}: CategoriesMenuProps) => {
+const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [title, setTitle] = useState("Categories");
+
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions());
 
   const selectedCategory = useMemo(() => {
     return data.find((cat) => cat.name === title);
