@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "generateType": "payload generate:types --output payload-types.ts"
+    "generateType": "payload generate:types --output payload-types.ts",
+    "vercel-build": "npx payload migrate && next build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.3",
