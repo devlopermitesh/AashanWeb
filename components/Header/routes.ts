@@ -1,36 +1,36 @@
-import { Home, User, MessageCircle, Settings } from "lucide-react"
+import { Home, User, MessageCircle, Settings } from 'lucide-react'
 
 export const routes = [
   {
-    title: "Home",
-    link: "/",
+    title: 'Home',
+    link: '/',
     icon: Home,
   },
   {
-    title: "Explore",
-    link: "/explore",
+    title: 'Explore',
+    link: '/explore',
     icon: User,
   },
   {
-    title: "Templates",
-    link: "/templates",
+    title: 'Templates',
+    link: '/templates',
     icon: MessageCircle,
   },
   {
-    title: "Features",
-    link: "/features",
+    title: 'Features',
+    link: '/features',
     icon: Settings,
   },
 
   {
-    title: "Pricing",
-    link: "/pricing",
+    title: 'Pricing',
+    link: '/pricing',
     icon: Settings,
   },
 
   {
-    title: "Abous us",
-    link: "/aboutus",
+    title: 'Abous us',
+    link: '/aboutus',
     icon: Settings,
   },
 ]

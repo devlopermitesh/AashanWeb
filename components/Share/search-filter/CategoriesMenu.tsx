@@ -1,67 +1,61 @@
-"use client";
+'use client'
 
-import { useTRPC } from "@/components/providers/TrcpProvider";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Category } from "@/payload-types";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useTRPC } from '@/components/providers/TrcpProvider'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Category } from '@/payload-types'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface CategoriesMenuProps {
-  children: React.ReactNode;
-  className?: string;
+  children: React.ReactNode
+  className?: string
 }
 
 interface ParentCategoryProps extends Category {
-  onClick: () => void;
+  onClick: () => void
 }
 
-const ParentCategory = ({ name, color, onClick }: ParentCategoryProps) => {
+const ParentCategory = ({ name, color, onClick, slug }: ParentCategoryProps) => {
   return (
     <div
-      onClick={onClick}
       className="flex w-full justify-between items-center p-2 border rounded border-gray-500/30 text-black bg-opacity-5 cursor-pointer"
-      style={{ backgroundColor: color ?? "#8de3c7" }}
+      style={{ backgroundColor: color ?? '#8de3c7' }}
     >
-      <span>{name}</span>
-      <ChevronRight className="w-5 h-5 text-neutral-700" />
+      <Link href={`/explore/${slug}`}>{name}</Link>
+      <ChevronRight onClick={onClick} className="w-5 h-5 text-neutral-700" />
     </div>
-  );
-};
+  )
+}
 
 const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
-  const bottomRef = useRef<HTMLDivElement | null>(null);
-  const [title, setTitle] = useState("Categories");
+  const bottomRef = useRef<HTMLDivElement | null>(null)
+  const [title, setTitle] = useState('Categories')
 
-  const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions());
+  const trpc = useTRPC()
+  const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions())
 
   const selectedCategory = useMemo(() => {
-    return data.find((cat) => cat.name === title);
-  }, [title, data]);
+    return data.find((cat) => cat.name === title)
+  }, [title, data])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [title]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [title])
 
   const handleBack = () => {
-    setTitle("Categories");
-  };
+    setTitle('Categories')
+  }
 
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
 
-      <SheetContent side="left" className={`bg-white ${className ?? ""}`}>
+      <SheetContent side="left" className={`bg-white ${className ?? ''}`}>
         <SheetHeader>
           <div className="flex items-center gap-2">
-            {title !== "Categories" && (
+            {title !== 'Categories' && (
               <ChevronLeft
                 onClick={handleBack}
                 className="w-6 h-6 hover:border hover:border-gray-300/70 rounded cursor-pointer"
@@ -72,7 +66,7 @@ const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
         </SheetHeader>
 
         <div className="flex flex-col w-full overflow-y-auto no-scrollbar px-2 gap-2 mt-4">
-          {title === "Categories" &&
+          {title === 'Categories' &&
             data.map((category) => (
               <ParentCategory
                 key={category.id}
@@ -81,18 +75,19 @@ const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
               />
             ))}
 
-          {title !== "Categories" && selectedCategory && (
+          {title !== 'Categories' && selectedCategory && (
             <div className="flex flex-col gap-2">
-              {selectedCategory.subcategories?.docs?.map((sub: any) => (
-                <div
+              {(selectedCategory.subcategories?.docs as Category[])?.map((sub) => (
+                <Link
+                  href={`/explore/${selectedCategory.slug}/${sub.slug}`}
                   key={sub.id}
                   style={{
                     backgroundColor: `color-mix(in srgb, ${selectedCategory.color} 70%, white)`,
                   }}
-                  className="p-2 border rounded  border-gray-300/50"
+                  className="block p-2 border rounded  border-gray-300/50"
                 >
                   {sub.name}
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -101,7 +96,7 @@ const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
         </div>
       </SheetContent>
     </Sheet>
-  );
-};
+  )
+}
 
-export default SideCategoriesMenu;
+export default SideCategoriesMenu
