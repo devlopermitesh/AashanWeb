@@ -1,18 +1,15 @@
-import { cn } from "@/lib/utils";
-import { Category } from "@/payload-types";
+import { cn } from '@/lib/utils'
+import { Category } from '@/payload-types'
+import Link from 'next/link'
 
 interface SubCategoriesProps {
-  isOpen: boolean;
-  position: { top: number; left: number };
-  category: Category;
+  isOpen: boolean
+  position: { top: number; left: number }
+  category: Category
 }
 
-const SubCategoriesMenu = ({
-  category,
-  isOpen,
-  position,
-}: SubCategoriesProps) => {
-  if (!isOpen) return null;
+const SubCategoriesMenu = ({ category, isOpen, position }: SubCategoriesProps) => {
+  if (!isOpen) return null
 
   return (
     <div
@@ -26,7 +23,7 @@ const SubCategoriesMenu = ({
 
       <div
         style={{
-          backgroundColor: category.color || "#e0e0e0",
+          backgroundColor: category.color || '#e0e0e0',
         }}
         className={`
         fixed z-100 w-60 max-h-80 overflow-auto
@@ -38,10 +35,12 @@ const SubCategoriesMenu = ({
       >
         {category.subcategories?.docs?.length
           ? (category.subcategories.docs as Category[]).map((sub) => (
-              <div
+              <Link
+                href={`/explore/${category.slug}/${sub.slug}`}
                 key={sub.id}
                 className={cn(
                   `
+                  block
                   underline
               p-2 mb-2 rounded-lg
               bg-neutral-800/200
@@ -53,16 +52,16 @@ const SubCategoriesMenu = ({
               hover:bg-gray-100/70
               
 
-            `,
+            `
                 )}
               >
                 {sub.name}
-              </div>
+              </Link>
             ))
           : null}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SubCategoriesMenu;
+export default SubCategoriesMenu
