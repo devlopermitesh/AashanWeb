@@ -13,7 +13,7 @@ const SubCategoriesMenu = ({ category, isOpen, position }: SubCategoriesProps) =
 
   return (
     <div
-      className="fixed"
+      className="fixed z-50"
       style={{
         top: position.top,
         left: position.left,

@@ -11,6 +11,7 @@ import { Media } from './collections/Media'
 import Categories from './collections/Categories'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { cloudinaryAdapter } from './adapters/cloudinary'
+import { Product } from './collections/Product'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -35,7 +36,7 @@ export default buildConfig({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS!,
     defaultFromName: process.env.EMAIL_FROM_NAME!,
   }),
-  collections: [Users, Media, Admins, Categories],
+  collections: [Users, Media, Admins, Categories, Product],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

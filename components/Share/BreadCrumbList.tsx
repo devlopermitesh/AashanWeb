@@ -42,7 +42,7 @@ const BreadCrumbList = () => {
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link
-              href={`/${activeCategory}`}
+              href={`/explore/${activeCategory}`}
               className=" text-xl
                 font-medium text-foreground
                 hover:text-primary

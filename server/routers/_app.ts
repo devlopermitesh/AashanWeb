@@ -1,11 +1,10 @@
-import { categoryRouter } from "@/modules/category/server/procedure/route";
-import { createrouter, publicProcedure } from "../trpc";
+import { categoryRouter } from '@/modules/category/server/procedure/route'
+import { createrouter } from '../trpc'
+import { ProductRouter } from '@/modules/product/server/procedure/route'
 
 export const appRouter = createrouter({
-  hello: publicProcedure.query(() => {
-    return { greeting: "hello world" };
-  }),
   category: categoryRouter,
-});
+  product: ProductRouter,
+})
 
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof appRouter

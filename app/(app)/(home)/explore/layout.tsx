@@ -15,9 +15,9 @@ export default async function ExploreLayout({ children }: { children: React.Reac
   }
 
   return (
-    <div className="flex flex-col h-auto lg:h-32 bg-white w-full">
+    <div className="flex flex-col bg-white w-full">
       <SearchFilter />
-      <div>{children}</div>
+      <div className="flex-1 bg-blue-100">{children}</div>
     </div>
   )
 }
