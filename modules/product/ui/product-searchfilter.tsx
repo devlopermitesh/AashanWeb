@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import PriceFilter from './price-filter'
 import { useProductFilter } from '../hooks/use-product'
 import { useDebounce } from '../hooks/use-debounce'
+import Tagsfilter from './tag-filter'
 
 export const ProductFilter = ({
   children,
@@ -81,12 +82,21 @@ const ProductSearchFilter = () => {
           </button>
         )}
       </div>
-      <ProductFilter title="Price">
+      <ProductFilter title="Price" className="border-b-transparent">
         <PriceFilter
           maxPrice={filters.maxPrice}
           minPrice={filters.minPrice}
           onMaxPriceChange={(value) => onChange('maxPrice', value)}
           onMinPriceChange={(value) => onChange('minPrice', value)}
+        />
+      </ProductFilter>
+      {/* Tags filter */}
+      <ProductFilter title="Tags">
+        <Tagsfilter
+          value={filters.tags}
+          onChange={(e) => {
+            onChange('tags', e)
+          }}
         />
       </ProductFilter>
     </div>

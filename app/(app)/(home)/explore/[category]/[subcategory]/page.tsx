@@ -1,6 +1,5 @@
-import { ProductList, ProductListSkeleton } from '@/modules/product/ui/product-list'
+import { ProductView } from '@/modules/product/ui/view/product-view'
 import { getQueryClient, HydrateClient, trpc } from '@/trpc/server'
-import { Suspense } from 'react'
 
 interface Props {
   params: {
@@ -13,15 +12,13 @@ const Page = async ({ params }: Props) => {
   const { subcategory } = await params
   const queryClient = getQueryClient()
   try {
-    void queryClient.prefetchQuery(trpc.product.getMany.queryOptions({}))
+    void queryClient.prefetchQuery(trpc.product.getMany.queryOptions({ category: subcategory }))
   } catch (error) {
     console.log('Product Prefetch Failed', error)
   }
   return (
     <HydrateClient>
-      <Suspense fallback={<ProductListSkeleton />}>
-        <ProductList category={subcategory} />
-      </Suspense>
+      <ProductView category={subcategory} />
     </HydrateClient>
   )
 }

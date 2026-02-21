@@ -12,6 +12,7 @@ import Categories from './collections/Categories'
 import { cloudStoragePlugin } from '@payloadcms/plugin-cloud-storage'
 import { cloudinaryAdapter } from './adapters/cloudinary'
 import { Product } from './collections/Product'
+import { Tags } from './collections/Tags'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -36,7 +37,7 @@ export default buildConfig({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS!,
     defaultFromName: process.env.EMAIL_FROM_NAME!,
   }),
-  collections: [Users, Media, Admins, Categories, Product],
+  collections: [Users, Media, Admins, Categories, Product, Tags],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -59,24 +60,5 @@ export default buildConfig({
         },
       },
     }),
-    // cloudinaryStorage({
-    //   publicID: {
-    //     enabled: true, // Enable custom public ID generation
-    //     useFilename: true, // Use the original filename in the public ID
-    //     uniqueFilename: true,
-    //   },
-    //   config: {
-    //     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
-    //     api_key: process.env.CLOUDINARY_API_KEY!,
-    //     api_secret: process.env.CLOUDINARY_API_SECRET!,
-    //   },
-    //   collections: {
-    //     media: true, // ← tumhara slug 'media' hai, to yaha true kar do
-    //     // agar aur upload collections hain to unko bhi add kar sakte ho
-    //   },
-    //   // optional settings (agar chahiye to)
-    //   // enabled: true,
-    //   folder: 'aashanweb/media', // Cloudinary mein folder organize karne ke liye
-    // }),
   ],
 })

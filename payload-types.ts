@@ -72,6 +72,7 @@ export interface Config {
     admins: Admin
     categories: Category
     products: Product
+    tags: Tag
     'payload-kv': PayloadKv
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
@@ -88,6 +89,7 @@ export interface Config {
     admins: AdminsSelect<false> | AdminsSelect<true>
     categories: CategoriesSelect<false> | CategoriesSelect<true>
     products: ProductsSelect<false> | ProductsSelect<true>
+    tags: TagsSelect<false> | TagsSelect<true>
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
@@ -275,8 +277,21 @@ export interface Product {
    */
   price: number
   category: string | Category
+  tags?: (string | Tag)[] | null
   medias?: (string | Media)[] | null
+  popularity?: number | null
   refundpolicy?: ('30-days' | '15-days' | '10-days' | '5-days') | null
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: string
+  name: string
+  products?: (string | Product)[] | null
   updatedAt: string
   createdAt: string
 }
@@ -323,6 +338,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products'
         value: string | Product
+      } | null)
+    | ({
+        relationTo: 'tags'
+        value: string | Tag
       } | null)
   globalSlug?: string | null
   user: {
@@ -494,8 +513,20 @@ export interface ProductsSelect<T extends boolean = true> {
   description?: T
   price?: T
   category?: T
+  tags?: T
   medias?: T
+  popularity?: T
   refundpolicy?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  name?: T
+  products?: T
   updatedAt?: T
   createdAt?: T
 }
