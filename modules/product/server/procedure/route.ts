@@ -81,7 +81,7 @@ export const ProductRouter = createrouter({
         }
       }
 
-      let sort = 'latest'
+      let sort = SORT_MAP['latest']
       //apply sort
       if (input.sort) {
         sort = SORT_MAP[input.sort ?? 'latest']
