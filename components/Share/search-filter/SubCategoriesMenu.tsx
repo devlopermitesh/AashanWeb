@@ -19,7 +19,7 @@ const SubCategoriesMenu = ({ category, isOpen, position }: SubCategoriesProps) =
         left: position.left,
       }}
     >
-      <div className="relative h-3 w-60 bg-trnasparent " />
+      <div className="relative h-3 w-60 bg-transparent " />
 
       <div
         style={{

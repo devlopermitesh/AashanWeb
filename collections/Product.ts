@@ -36,10 +36,22 @@ export const Product: CollectionConfig = {
       hasMany: false,
     },
     {
+      name: 'tags',
+      type: 'relationship',
+      relationTo: 'tags',
+      hasMany: true,
+    },
+    {
       name: 'medias',
       type: 'upload',
       relationTo: 'media',
       hasMany: true,
+    },
+    {
+      name: 'popularity',
+      type: 'number',
+      defaultValue: 0,
+      index: true,
     },
     {
       name: 'refundpolicy',
