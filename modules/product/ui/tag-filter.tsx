@@ -21,7 +21,7 @@ const Tagsfilter = (props: TagsfilterProps) => {
       }
     )
   )
-  const isChecked = (tag: string) => props.value?.includes(tag)
+  const isChecked = (tag: string) => !!props.value?.includes(tag)
   const handleonChange = (tag: string, checked: boolean) => {
     if (!checked) {
       props.onChange?.(props.value?.filter((t) => t !== tag) || [])
