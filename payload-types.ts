@@ -63,16 +63,16 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    admins: AdminAuthOperations
+    users: UserAuthOperations
   }
   blocks: {}
   collections: {
     users: User
     media: Media
-    admins: Admin
     categories: Category
     products: Product
     tags: Tag
+    shops: Shop
     'payload-kv': PayloadKv
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
@@ -86,10 +86,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>
     media: MediaSelect<false> | MediaSelect<true>
-    admins: AdminsSelect<false> | AdminsSelect<true>
     categories: CategoriesSelect<false> | CategoriesSelect<true>
     products: ProductsSelect<false> | ProductsSelect<true>
     tags: TagsSelect<false> | TagsSelect<true>
+    shops: ShopsSelect<false> | ShopsSelect<true>
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
@@ -104,13 +104,13 @@ export interface Config {
   globals: {}
   globalsSelect: {}
   locale: null
-  user: Admin
+  user: User
   jobs: {
     tasks: unknown
     workflows: unknown
   }
 }
-export interface AdminAuthOperations {
+export interface UserAuthOperations {
   forgotPassword: {
     email: string
     password: string
@@ -135,13 +135,28 @@ export interface AdminAuthOperations {
 export interface User {
   id: string
   clerkId: string
-  email: string
   firstName?: string | null
   lastName?: string | null
   profileImage?: string | null
-  role?: ('user' | 'admin' | 'editor') | null
+  role?: ('admin' | 'super-admin')[] | null
   updatedAt: string
   createdAt: string
+  email: string
+  resetPasswordToken?: string | null
+  resetPasswordExpiration?: string | null
+  salt?: string | null
+  hash?: string | null
+  loginAttempts?: number | null
+  lockUntil?: string | null
+  sessions?:
+    | {
+        id: string
+        createdAt?: string | null
+        expiresAt: string
+      }[]
+    | null
+  password?: string | null
+  collection: 'users'
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -222,32 +237,6 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins".
- */
-export interface Admin {
-  id: string
-  name?: string | null
-  updatedAt: string
-  createdAt: string
-  email: string
-  resetPasswordToken?: string | null
-  resetPasswordExpiration?: string | null
-  salt?: string | null
-  hash?: string | null
-  loginAttempts?: number | null
-  lockUntil?: string | null
-  sessions?:
-    | {
-        id: string
-        createdAt?: string | null
-        expiresAt: string
-      }[]
-    | null
-  password?: string | null
-  collection: 'admins'
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -270,6 +259,7 @@ export interface Category {
  */
 export interface Product {
   id: string
+  tenant?: (string | null) | Shop
   name: string
   description?: string | null
   /**
@@ -281,6 +271,33 @@ export interface Product {
   medias?: (string | Media)[] | null
   popularity?: number | null
   refundpolicy?: ('30-days' | '15-days' | '10-days' | '5-days') | null
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops".
+ */
+export interface Shop {
+  id: string
+  name: string
+  /**
+   * Used for subdomain (eg: [slug].aashan.com)
+   */
+  slug: string
+  image: string | Media
+  /**
+   * Stripe connected account ID
+   */
+  stripeAccountId?: string | null
+  /**
+   * Stripe payments activation status
+   */
+  paymentsActivated?: boolean | null
+  /**
+   * Disable shop without deleting it
+   */
+  isActive?: boolean | null
   updatedAt: string
   createdAt: string
 }
@@ -328,10 +345,6 @@ export interface PayloadLockedDocument {
         value: string | Media
       } | null)
     | ({
-        relationTo: 'admins'
-        value: string | Admin
-      } | null)
-    | ({
         relationTo: 'categories'
         value: string | Category
       } | null)
@@ -343,10 +356,14 @@ export interface PayloadLockedDocument {
         relationTo: 'tags'
         value: string | Tag
       } | null)
+    | ({
+        relationTo: 'shops'
+        value: string | Shop
+      } | null)
   globalSlug?: string | null
   user: {
-    relationTo: 'admins'
-    value: string | Admin
+    relationTo: 'users'
+    value: string | User
   }
   updatedAt: string
   createdAt: string
@@ -358,8 +375,8 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: string
   user: {
-    relationTo: 'admins'
-    value: string | Admin
+    relationTo: 'users'
+    value: string | User
   }
   key?: string | null
   value?:
@@ -391,13 +408,26 @@ export interface PayloadMigration {
  */
 export interface UsersSelect<T extends boolean = true> {
   clerkId?: T
-  email?: T
   firstName?: T
   lastName?: T
   profileImage?: T
   role?: T
   updatedAt?: T
   createdAt?: T
+  email?: T
+  resetPasswordToken?: T
+  resetPasswordExpiration?: T
+  salt?: T
+  hash?: T
+  loginAttempts?: T
+  lockUntil?: T
+  sessions?:
+    | T
+    | {
+        id?: T
+        createdAt?: T
+        expiresAt?: T
+      }
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -470,29 +500,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins_select".
- */
-export interface AdminsSelect<T extends boolean = true> {
-  name?: T
-  updatedAt?: T
-  createdAt?: T
-  email?: T
-  resetPasswordToken?: T
-  resetPasswordExpiration?: T
-  salt?: T
-  hash?: T
-  loginAttempts?: T
-  lockUntil?: T
-  sessions?:
-    | T
-    | {
-        id?: T
-        createdAt?: T
-        expiresAt?: T
-      }
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -509,6 +516,7 @@ export interface CategoriesSelect<T extends boolean = true> {
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
+  tenant?: T
   name?: T
   description?: T
   price?: T
@@ -527,6 +535,20 @@ export interface ProductsSelect<T extends boolean = true> {
 export interface TagsSelect<T extends boolean = true> {
   name?: T
   products?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops_select".
+ */
+export interface ShopsSelect<T extends boolean = true> {
+  name?: T
+  slug?: T
+  image?: T
+  stripeAccountId?: T
+  paymentsActivated?: T
+  isActive?: T
   updatedAt?: T
   createdAt?: T
 }

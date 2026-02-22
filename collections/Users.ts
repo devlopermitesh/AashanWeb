@@ -1,10 +1,24 @@
+import type { CollectionConfig } from 'payload'
+import { tenantsArrayField } from '@payloadcms/plugin-multi-tenant/fields'
 
-import type { CollectionConfig } from "payload";
-
-
- const Users: CollectionConfig = {
+export const defaultTennantArrayField = tenantsArrayField({
+  tenantsArrayFieldName: 'shops',
+  tenantsCollectionSlug: 'shops',
+  tenantsArrayTenantFieldName: 'shop',
+  arrayFieldAccess: {
+    read: () => true,
+    create: () => true,
+    update: () => true,
+  },
+  tenantFieldAccess: {
+    read: () => true,
+    create: () => true,
+    update: () => true,
+  },
+})
+const Users: CollectionConfig = {
   slug: 'users',
-  auth: false, // Disable Payload's built-in auth since Clerk handles it
+  auth: true,
   admin: {
     useAsTitle: 'email',
   },
@@ -37,9 +51,17 @@ import type { CollectionConfig } from "payload";
     {
       name: 'role',
       type: 'select',
-      options: ['user', 'admin', 'editor'],
-      defaultValue: 'user',
+      options: ['admin', 'super-admin'],
+      defaultValue: 'admin',
+      hasMany: true,
+    },
+    {
+      ...defaultTennantArrayField,
+      admin: {
+        ...(defaultTennantArrayField?.admin || {}),
+        position: 'sidebar',
+      },
     },
   ],
-};
-export default Users;
+}
+export default Users
