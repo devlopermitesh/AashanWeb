@@ -1,19 +1,51 @@
+import type { CollectionConfig } from 'payload'
+import { tenantsArrayField } from '@payloadcms/plugin-multi-tenant/fields'
+import { isSuperAdmin } from './lib/access/isSuperAdmin'
+import { isForbidden } from './lib/access/isForbidden'
+import { isAdminEnabledRoles } from './lib/access/isAdminEnabledRoles'
+import { ClerkStrategy } from './lib/auth/clerk-strategy'
 
-import type { CollectionConfig } from "payload";
+export const defaultTennantArrayField = tenantsArrayField({
+  tenantsArrayFieldName: 'shops',
+  tenantsCollectionSlug: 'shops',
+  tenantsArrayTenantFieldName: 'shop',
+  arrayFieldAccess: {
+    read: () => true,
+    create: isSuperAdmin,
+    update: isSuperAdmin,
+  },
 
-
- const Users: CollectionConfig = {
+  tenantFieldAccess: {
+    read: () => true,
+    create: isSuperAdmin,
+    update: isSuperAdmin,
+  },
+})
+const Users: CollectionConfig = {
   slug: 'users',
-  auth: false, // Disable Payload's built-in auth since Clerk handles it
+  auth: {
+    disableLocalStrategy: true,
+    strategies: [ClerkStrategy],
+  },
+  access: {
+    read: () => true,
+    create: isForbidden,
+    update: isForbidden,
+    delete: isForbidden,
+    admin: isAdminEnabledRoles,
+    unlock: isForbidden,
+    readVersions: isForbidden,
+  },
   admin: {
     useAsTitle: 'email',
   },
   fields: [
     {
-      name: 'clerkId',
+      name: 'clerkUserId',
+      label: 'Clerk userId',
       type: 'text',
-      required: true,
       unique: true,
+      required: true,
       index: true,
     },
     {
@@ -31,15 +63,19 @@ import type { CollectionConfig } from "payload";
       type: 'text',
     },
     {
-      name: 'profileImage',
-      type: 'text',
-    },
-    {
-      name: 'role',
+      name: 'roles',
       type: 'select',
-      options: ['user', 'admin', 'editor'],
+      options: ['org:shop_owner', 'super-admin', 'user'],
+      hasMany: true,
       defaultValue: 'user',
     },
+    {
+      ...defaultTennantArrayField,
+      admin: {
+        ...(defaultTennantArrayField?.admin || {}),
+        position: 'sidebar',
+      },
+    },
   ],
-};
-export default Users;
+}
+export default Users

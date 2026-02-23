@@ -1,4 +1,4 @@
-import { getPayloadClient } from '@/lib/payload'
+import { getPayloadClient } from '@/collections/lib/payload'
 import { BasePayload } from 'payload'
 
 type TagSeed = {

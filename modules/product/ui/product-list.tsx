@@ -33,8 +33,8 @@ export const ProductList = ({ category }: { category?: string }) => {
                 id={product.id}
                 name={product.name}
                 imageUrl={product.medias?.[0]?.url ?? '/placeholder.jpg'}
-                authorUsername="Mitesh"
-                authroImageUrl="/man.png"
+                authorUsername={product.tenant?.name || 'plateform purchase'}
+                authroImageUrl={product?.tenant?.logo?.url || '/man.png'}
                 style={{
                   backgroundColor:
                     `color-mix(in srgb, ${product.category.color} 70%, white)` || '#e0e0e0',

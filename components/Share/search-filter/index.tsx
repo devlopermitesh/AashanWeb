@@ -1,8 +1,8 @@
 import SearchInput from './SearchInput'
 import Categories from './Categories'
 import { HydrateClient } from '@/trpc/server'
-import { Suspense } from 'react'
 import BreadCrumbList from '../BreadCrumbList'
+import { Suspense } from 'react'
 const SearchFilter = async () => {
   return (
     <HydrateClient>
