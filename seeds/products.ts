@@ -1,4 +1,4 @@
-import { getPayloadClient } from '@/lib/payload'
+import { getPayloadClient } from '@/collections/lib/payload'
 import { BasePayload } from 'payload'
 
 const REFUND_POLICIES = ['30-days', '15-days', '10-days', '5-days'] as const

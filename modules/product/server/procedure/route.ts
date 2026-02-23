@@ -1,5 +1,5 @@
 import { DEFAULT_QUERY_PRODUCT_LIMIT, sorted, SortType } from '@/components/Share/constant'
-import { Category, Media } from '@/payload-types'
+import { Category, Media, Shop } from '@/payload-types'
 import { createrouter, publicProcedure } from '@/server/trpc'
 import { Where } from 'payload'
 import z from 'zod'
@@ -100,6 +100,7 @@ export const ProductRouter = createrouter({
           ...doc,
           medias: (doc.medias as Media[]) || [],
           category: doc.category as Category,
+          tenant: doc.tenant as Shop & { name: string; logo: Media | null },
         })),
         hasNextPage: data.hasNextPage,
         totalDocs: data.totalDocs,

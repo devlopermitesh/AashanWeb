@@ -1,5 +1,9 @@
 import type { CollectionConfig } from 'payload'
 import { tenantsArrayField } from '@payloadcms/plugin-multi-tenant/fields'
+import { isSuperAdmin } from './lib/access/isSuperAdmin'
+import { isForbidden } from './lib/access/isForbidden'
+import { isAdminEnabledRoles } from './lib/access/isAdminEnabledRoles'
+import { ClerkStrategy } from './lib/auth/clerk-strategy'
 
 export const defaultTennantArrayField = tenantsArrayField({
   tenantsArrayFieldName: 'shops',
@@ -7,27 +11,41 @@ export const defaultTennantArrayField = tenantsArrayField({
   tenantsArrayTenantFieldName: 'shop',
   arrayFieldAccess: {
     read: () => true,
-    create: () => true,
-    update: () => true,
+    create: isSuperAdmin,
+    update: isSuperAdmin,
   },
+
   tenantFieldAccess: {
     read: () => true,
-    create: () => true,
-    update: () => true,
+    create: isSuperAdmin,
+    update: isSuperAdmin,
   },
 })
 const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: {
+    disableLocalStrategy: true,
+    strategies: [ClerkStrategy],
+  },
+  access: {
+    read: () => true,
+    create: isForbidden,
+    update: isForbidden,
+    delete: isForbidden,
+    admin: isAdminEnabledRoles,
+    unlock: isForbidden,
+    readVersions: isForbidden,
+  },
   admin: {
     useAsTitle: 'email',
   },
   fields: [
     {
-      name: 'clerkId',
+      name: 'clerkUserId',
+      label: 'Clerk userId',
       type: 'text',
-      required: true,
       unique: true,
+      required: true,
       index: true,
     },
     {
@@ -45,15 +63,11 @@ const Users: CollectionConfig = {
       type: 'text',
     },
     {
-      name: 'profileImage',
-      type: 'text',
-    },
-    {
-      name: 'role',
+      name: 'roles',
       type: 'select',
-      options: ['admin', 'super-admin'],
-      defaultValue: 'admin',
+      options: ['org:shop_owner', 'super-admin', 'user'],
       hasMany: true,
+      defaultValue: 'user',
     },
     {
       ...defaultTennantArrayField,

@@ -16,12 +16,17 @@ import Shops from './collections/Shop'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
 export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
+    },
+    components: {
+      logout: {
+        Button: './modules/admin/ui/logout#LogoutBtn',
+      },
+      providers: ['./components/providers/CustomeClerkProvider#CustomeClerkProvider'],
     },
   },
   email: nodemailerAdapter({
@@ -67,9 +72,11 @@ export default buildConfig({
       },
       tenantsArrayField: {
         includeDefaultField: false,
+        arrayFieldName: 'shops',
+        arrayTenantFieldName: 'shop',
       },
       userHasAccessToAllTenants(user) {
-        return Boolean(user.role?.includes('super-admin'))
+        return Boolean(user.roles?.includes('super-admin'))
       },
     }),
   ],

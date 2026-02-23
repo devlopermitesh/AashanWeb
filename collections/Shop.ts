@@ -6,6 +6,23 @@ const Shops: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
+  access: {
+    read: () => true,
+
+    create: () => false,
+    update: ({ req: { user } }) => {
+      return !!user &&
+        (user.roles?.includes('org:shop_owner') || user.roles?.includes('super-admin'))
+        ? true
+        : false
+    },
+    delete: ({ req: { user } }) => {
+      return !!user &&
+        (user.roles?.includes('org:shop_owner') || user.roles?.includes('super-admin'))
+        ? true
+        : false
+    },
+  },
   fields: [
     /* =========
        CORE
@@ -25,14 +42,19 @@ const Shops: CollectionConfig = {
       },
     },
 
+    {
+      name: 'organizationId',
+      type: 'text',
+      required: true,
+      unique: true,
+    },
     /* =========
        BRANDING
     ========= */
     {
-      name: 'image',
+      name: 'logo',
       type: 'upload',
       relationTo: 'media',
-      required: true,
     },
 
     /* =========

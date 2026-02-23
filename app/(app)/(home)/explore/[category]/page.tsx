@@ -17,7 +17,6 @@ const Page = async ({ params, searchParams }: Props) => {
   const { category } = await params
   const filters = loadProductSearchParamsFilter(await searchParams)
   const queryClient = getQueryClient()
-  console.log('filetrs', filters)
   try {
     void queryClient.prefetchQuery(trpc.product.getMany.queryOptions({ category, ...filters }))
   } catch (error) {

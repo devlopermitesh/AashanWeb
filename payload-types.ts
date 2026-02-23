@@ -134,29 +134,48 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string
-  clerkId: string
+  clerkUserId: string
+  email: string
   firstName?: string | null
   lastName?: string | null
-  profileImage?: string | null
-  role?: ('admin' | 'super-admin')[] | null
-  updatedAt: string
-  createdAt: string
-  email: string
-  resetPasswordToken?: string | null
-  resetPasswordExpiration?: string | null
-  salt?: string | null
-  hash?: string | null
-  loginAttempts?: number | null
-  lockUntil?: string | null
-  sessions?:
+  roles?: ('org:shop_owner' | 'super-admin' | 'user')[] | null
+  shops?:
     | {
-        id: string
-        createdAt?: string | null
-        expiresAt: string
+        shop: string | Shop
+        id?: string | null
       }[]
     | null
-  password?: string | null
+  updatedAt: string
+  createdAt: string
   collection: 'users'
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shops".
+ */
+export interface Shop {
+  id: string
+  name: string
+  /**
+   * Used for subdomain (eg: [slug].aashan.com)
+   */
+  slug: string
+  organizationId: string
+  logo?: (string | null) | Media
+  /**
+   * Stripe connected account ID
+   */
+  stripeAccountId?: string | null
+  /**
+   * Stripe payments activation status
+   */
+  paymentsActivated?: boolean | null
+  /**
+   * Disable shop without deleting it
+   */
+  isActive?: boolean | null
+  updatedAt: string
+  createdAt: string
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -276,33 +295,6 @@ export interface Product {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "shops".
- */
-export interface Shop {
-  id: string
-  name: string
-  /**
-   * Used for subdomain (eg: [slug].aashan.com)
-   */
-  slug: string
-  image: string | Media
-  /**
-   * Stripe connected account ID
-   */
-  stripeAccountId?: string | null
-  /**
-   * Stripe payments activation status
-   */
-  paymentsActivated?: boolean | null
-  /**
-   * Disable shop without deleting it
-   */
-  isActive?: boolean | null
-  updatedAt: string
-  createdAt: string
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tags".
  */
 export interface Tag {
@@ -407,27 +399,19 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  clerkId?: T
+  clerkUserId?: T
+  email?: T
   firstName?: T
   lastName?: T
-  profileImage?: T
-  role?: T
-  updatedAt?: T
-  createdAt?: T
-  email?: T
-  resetPasswordToken?: T
-  resetPasswordExpiration?: T
-  salt?: T
-  hash?: T
-  loginAttempts?: T
-  lockUntil?: T
-  sessions?:
+  roles?: T
+  shops?:
     | T
     | {
+        shop?: T
         id?: T
-        createdAt?: T
-        expiresAt?: T
       }
+  updatedAt?: T
+  createdAt?: T
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -545,7 +529,8 @@ export interface TagsSelect<T extends boolean = true> {
 export interface ShopsSelect<T extends boolean = true> {
   name?: T
   slug?: T
-  image?: T
+  organizationId?: T
+  logo?: T
   stripeAccountId?: T
   paymentsActivated?: T
   isActive?: T

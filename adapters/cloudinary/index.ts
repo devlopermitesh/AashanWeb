@@ -1,6 +1,6 @@
 // src/adapters/cloudinaryAdapter.ts
 import type { Adapter, GeneratedAdapter } from '@payloadcms/plugin-cloud-storage/types'
-import cloudinary from '@/lib/cloudinary'
+import cloudinary from '@/collections/lib/cloudinary'
 import { UploadApiResponse } from 'cloudinary'
 import { getStaticHandler } from './hooks/staticHandler'
 import { FileDataWithCloudinary } from './types'
