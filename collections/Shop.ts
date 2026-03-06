@@ -6,24 +6,39 @@ const assignDefaultTemplate: CollectionBeforeChangeHook = async ({ data, req, op
   if (operation !== 'create') return data
 
   // agar already diya hai (super-admin case)
-  if (data.template) return data
+  if (data?.template) return data
 
-  // default FREE template uthao
+  // default FREE plan uthao
+  const defaultFreePlan = await req.payload.find({
+    collection: 'plans',
+    where: {
+      isDefault: { equals: true },
+      category: { equals: 'free' },
+    },
+    limit: 1,
+    depth: 0,
+  })
+
+  if (!defaultFreePlan.docs.length) {
+    throw new Error('No default free plan found')
+  }
+
+  // us plan ka koi template uthao
   const defaultTemplate = await req.payload.find({
     collection: 'templates',
     where: {
-      isDefault: { equals: true },
-      'plan.category': { equals: 'free' },
+      plan: { equals: defaultFreePlan.docs[0].id },
     },
     limit: 1,
+    depth: 0,
   })
 
   if (!defaultTemplate.docs.length) {
-    throw new Error('No default template found')
+    throw new Error('No template found for default free plan')
   }
 
   return {
-    ...data,
+    ...(data || {}),
     template: defaultTemplate.docs[0].id,
   }
 }

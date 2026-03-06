@@ -276,6 +276,7 @@ export interface Template {
   plan: string | Plan
   themePreset: 'hobby-fabric'
   fontPreset: 'inter' | 'poppins'
+  isDefault?: boolean | null
   /**
    * Template sections. Add one or more blocks (currently navbar).
    */
@@ -842,6 +843,7 @@ export interface TemplatesSelect<T extends boolean = true> {
   plan?: T
   themePreset?: T
   fontPreset?: T
+  isDefault?: T
   sections?:
     | T
     | {

@@ -56,7 +56,12 @@ export const Templates: CollectionConfig = {
       required: true,
       options: SECTIONS_FONTS,
     },
-
+    //Limits
+    {
+      name: 'isDefault',
+      type: 'checkbox',
+      defaultValue: false,
+    },
     // 🧱  Sections
     {
       name: 'sections',
