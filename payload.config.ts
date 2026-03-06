@@ -14,6 +14,10 @@ import { Product } from './collections/Product'
 import { Tags } from './collections/Tags'
 import Shops from './collections/Shop'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
+import { Plans } from './collections/Plans'
+import { Templates } from './collections/Templates'
+import { ShopTemplates } from './collections/ShopTemplates'
+import { ShopCategories } from './collections/ShopCategories'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 export default buildConfig({
@@ -42,7 +46,18 @@ export default buildConfig({
     defaultFromAddress: process.env.EMAIL_FROM_ADDRESS!,
     defaultFromName: process.env.EMAIL_FROM_NAME!,
   }),
-  collections: [Users, Media, Categories, Product, Tags, Shops],
+  collections: [
+    Users,
+    Media,
+    Categories,
+    Product,
+    Tags,
+    Shops,
+    Plans,
+    Templates,
+    ShopTemplates,
+    ShopCategories,
+  ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -69,6 +84,8 @@ export default buildConfig({
       tenantsSlug: 'shops',
       collections: {
         products: {},
+        shopcategories: {},
+        media: {},
       },
       tenantsArrayField: {
         includeDefaultField: false,

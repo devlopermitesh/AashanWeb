@@ -16,7 +16,6 @@ const getUser = async ({ payload }: { payload: BasePayload }) => {
   // Dynamic import to avoid issues during type generation
   const { auth } = await import('@clerk/nextjs/server')
   const { userId } = await auth()
-
   if (!userId) return null
 
   const existing = await payload.find({
@@ -28,7 +27,6 @@ const getUser = async ({ payload }: { payload: BasePayload }) => {
     },
     limit: 1,
   })
-
   if (existing.docs.length > 0) {
     return existing.docs[0]
   }

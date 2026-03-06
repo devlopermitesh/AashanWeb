@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -94,4 +94,11 @@
   h6 {
     @apply font-heading;
   }
+}
+
+[data-theme='hobby-fabric'] {
+  --primary: '#E6C744';
+  --background: '#FFFFFF';
+  --image_coverBackground: '#C2C8DA';
+  --text: '#000000';
 }

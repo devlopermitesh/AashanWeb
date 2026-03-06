@@ -2,18 +2,18 @@
 
 import { useTRPC } from '@/components/providers/TrcpProvider'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Category } from '@/payload-types'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ExploreCategory } from './types'
 
 interface CategoriesMenuProps {
   children: React.ReactNode
   className?: string
 }
 
-interface ParentCategoryProps extends Category {
+interface ParentCategoryProps extends ExploreCategory {
   onClick: () => void
 }
 
@@ -35,10 +35,11 @@ const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
 
   const trpc = useTRPC()
   const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions())
+  const categories = data as unknown as ExploreCategory[]
 
   const selectedCategory = useMemo(() => {
-    return data.find((cat) => cat.name === title)
-  }, [title, data])
+    return categories.find((cat) => cat.name === title)
+  }, [title, categories])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -67,7 +68,7 @@ const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
 
         <div className="flex flex-col w-full overflow-y-auto no-scrollbar px-2 gap-2 mt-4">
           {title === 'Categories' &&
-            data.map((category) => (
+            categories.map((category) => (
               <ParentCategory
                 key={category.id}
                 {...category}
@@ -77,7 +78,7 @@ const SideCategoriesMenu = ({ children, className }: CategoriesMenuProps) => {
 
           {title !== 'Categories' && selectedCategory && (
             <div className="flex flex-col gap-2">
-              {(selectedCategory.subcategories?.docs as Category[])?.map((sub) => (
+              {selectedCategory.subcategories?.docs?.map((sub) => (
                 <Link
                   href={`/explore/${selectedCategory.slug}/${sub.slug}`}
                   key={sub.id}

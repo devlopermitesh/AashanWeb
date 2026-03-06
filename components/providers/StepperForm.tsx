@@ -4,7 +4,7 @@ import { createContext, useContext, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 
-export type StepId = 'sign-up' | 'verify-email' | 'create-org' | 'complete'
+export type StepId = 'sign-up' | 'verify-email' | 'create-org' | 'choose-template' | 'complete'
 
 export interface Step {
   id: StepId
@@ -33,6 +33,13 @@ const DEFAULT_STEPS: Step[] = [
     id: 'create-org',
     label: 'Create Organisation',
     description: 'Set up your workspace',
+    isCompleted: false,
+    isSkippable: false,
+  },
+  {
+    id: 'choose-template',
+    label: 'Select Template',
+    description: 'Choose a starting point for your workspace',
     isCompleted: false,
     isSkippable: false,
   },
@@ -69,6 +76,8 @@ export const StepperFormProvider = ({ children }: { children: React.ReactNode })
     let nextStep = 1
 
     if (pathname.includes('/organizations/success-organization')) {
+      nextStep = 5
+    } else if (pathname.includes('/organizations/choose-template')) {
       nextStep = 4
     } else if (pathname.includes('/organizations/create-organization')) {
       nextStep = 3

@@ -11,6 +11,7 @@ export default clerkMiddleware(async (auth, req) => {
     const signURL = new URL('/sign-in', req.url)
     return NextResponse.redirect(signURL)
   }
+  console.log('currentUser', orgRole, 'Session data', sessionClaims?.['metadata'])
 
   // If user has an active organization and is author in it, allow /admin.
   if (orgId && orgRole === 'org:shop_owner') return

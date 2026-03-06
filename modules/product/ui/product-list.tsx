@@ -7,6 +7,26 @@ import { Loader2 } from 'lucide-react'
 import ProductCard, { NoproductFound, ProductSkeleton } from './product-card.'
 import { DEFAULT_QUERY_PRODUCT_LIMIT } from '@/components/Share/constant'
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const getProductCategoryColor = (category: unknown): string => {
+  if (!isRecord(category)) {
+    return '#e0e0e0'
+  }
+
+  const parent = category.parent
+  if (isRecord(parent) && typeof parent.color === 'string' && parent.color) {
+    return parent.color
+  }
+
+  if (typeof category.color === 'string' && category.color) {
+    return category.color
+  }
+
+  return '#e0e0e0'
+}
+
 export const ProductList = ({ category }: { category?: string }) => {
   const trpc = useTRPC()
   const [filters] = useProductFilter()
@@ -27,25 +47,27 @@ export const ProductList = ({ category }: { category?: string }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {data?.pages.flatMap((page) =>
           page.docs.length > 0 ? (
-            page.docs.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                imageUrl={product.medias?.[0]?.url ?? '/placeholder.jpg'}
-                authorUsername={product.tenant?.name || 'plateform purchase'}
-                authroImageUrl={product?.tenant?.logo?.url || '/man.png'}
-                style={{
-                  backgroundColor:
-                    `color-mix(in srgb, ${product.category.color} 70%, white)` || '#e0e0e0',
-                }}
-                price={product.price}
-                className={`bg-[#${product.category.color}]`}
-                reviewCount={4}
-                reviewrating={2}
-                trending
-              />
-            ))
+            page.docs.map((product) => {
+              const categoryColor = getProductCategoryColor(product.category)
+
+              return (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  imageUrl={product.medias?.[0]?.url ?? '/placeholder.jpg'}
+                  authorUsername={product.tenant?.name || 'plateform purchase'}
+                  authroImageUrl={product?.tenant?.logo?.url || '/man.png'}
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${categoryColor} 70%, white)`,
+                  }}
+                  price={product.price}
+                  reviewCount={4}
+                  reviewrating={2}
+                  trending
+                />
+              )
+            })
           ) : (
             <NoproductFound className="col-span-2 sm:col-span-3 lg:col-span-4 xl:col-span-5 min-h-50 " />
           )

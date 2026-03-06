@@ -1,11 +1,11 @@
 import { cn } from '@/lib/utils'
-import { Category } from '@/payload-types'
 import Link from 'next/link'
+import type { ExploreCategory } from './types'
 
 interface SubCategoriesProps {
   isOpen: boolean
   position: { top: number; left: number }
-  category: Category
+  category: ExploreCategory
 }
 
 const SubCategoriesMenu = ({ category, isOpen, position }: SubCategoriesProps) => {
@@ -34,7 +34,7 @@ const SubCategoriesMenu = ({ category, isOpen, position }: SubCategoriesProps) =
       `}
       >
         {category.subcategories?.docs?.length
-          ? (category.subcategories.docs as Category[]).map((sub) => (
+          ? category.subcategories.docs.map((sub) => (
               <Link
                 href={`/explore/${category.slug}/${sub.slug}`}
                 key={sub.id}
