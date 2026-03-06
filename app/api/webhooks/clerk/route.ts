@@ -3,6 +3,7 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { syncUserToPayload } from '@/collections/lib/clerk-sync'
+import { inspect } from 'node:util'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
@@ -39,8 +40,22 @@ export async function POST(req: Request) {
     console.error('Webhook verification failed:', err)
     return new Response('Webhook verification failed', { status: 400 })
   }
-
-  await syncUserToPayload(evt)
+  try {
+    await syncUserToPayload(evt)
+  } catch (error: unknown) {
+    const details = {
+      message: error instanceof Error ? error.message : undefined,
+      stack: error instanceof Error ? error.stack : undefined,
+      cause: error instanceof Error ? error.cause : undefined,
+      eventType: evt?.type,
+      clerkUserId: evt?.data?.id,
+    }
+    console.error('Webhook sync error details:', {
+      ...details,
+      inspected: inspect(details, { depth: null, colors: false }),
+    })
+    return new Response('Webhook failed', { status: 500 })
+  }
 
   return new Response('Webhook processed', { status: 200 })
 }

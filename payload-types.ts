@@ -73,6 +73,10 @@ export interface Config {
     products: Product
     tags: Tag
     shops: Shop
+    plans: Plan
+    templates: Template
+    'shop-templates': ShopTemplate
+    shopcategories: Shopcategory
     'payload-kv': PayloadKv
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
@@ -81,6 +85,7 @@ export interface Config {
   collectionsJoins: {
     categories: {
       subcategories: 'categories'
+      shopSubcategories: 'shopcategories'
     }
   }
   collectionsSelect: {
@@ -90,6 +95,10 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>
     tags: TagsSelect<false> | TagsSelect<true>
     shops: ShopsSelect<false> | ShopsSelect<true>
+    plans: PlansSelect<false> | PlansSelect<true>
+    templates: TemplatesSelect<false> | TemplatesSelect<true>
+    'shop-templates': ShopTemplatesSelect<false> | ShopTemplatesSelect<true>
+    shopcategories: ShopcategoriesSelect<false> | ShopcategoriesSelect<true>
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
@@ -174,6 +183,7 @@ export interface Shop {
    * Disable shop without deleting it
    */
   isActive?: boolean | null
+  template?: (string | null) | Template
   updatedAt: string
   createdAt: string
 }
@@ -183,6 +193,7 @@ export interface Shop {
  */
 export interface Media {
   id: string
+  tenant?: (string | null) | Shop
   alt: string
   caption?: {
     root: {
@@ -256,6 +267,99 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates".
+ */
+export interface Template {
+  id: string
+  name: string
+  slug: string
+  plan: string | Plan
+  themePreset: 'hobby-fabric'
+  fontPreset: 'inter' | 'poppins'
+  /**
+   * Template sections. Add one or more blocks (currently navbar).
+   */
+  sections: (NavbarBlock | HeroBlock)[]
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: string
+  name: string
+  slug: string
+  category: 'free' | 'paid'
+  allowedSections: ('navbar' | 'hero')[]
+  allowedThemes: 'hobby-fabric'[]
+  allowedFonts: ('inter' | 'poppins')[]
+  maxproducts?: number | null
+  navlinksactivate?: boolean | null
+  isDefault?: boolean | null
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NavbarBlock".
+ */
+export interface NavbarBlock {
+  type: 'navbar'
+  variant?: string | null
+  disabled?: boolean | null
+  settings: {
+    layout: 'left' | 'center' | 'split'
+    sticky?: boolean | null
+    logo?: {
+      type?: ('text' | 'image') | null
+      text?: string | null
+      logo_image?: (string | null) | Media
+    }
+    href?: {
+      linkSource?: ('manual' | 'categories') | null
+      categorieslink?: (string | Shopcategory)[] | null
+      links?:
+        | {
+            label: string
+            href: string
+            external?: boolean | null
+            id?: string | null
+          }[]
+        | null
+    }
+    showCTA?: boolean | null
+    cta?: {
+      label?: string | null
+      href?: string | null
+      variant?: ('primary' | 'secondary') | null
+    }
+  }
+  /**
+   * Legacy support. Prefer settings.sticky.
+   */
+  sticky?: boolean | null
+  id?: string | null
+  blockName?: string | null
+  blockType: 'navbar'
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shopcategories".
+ */
+export interface Shopcategory {
+  id: string
+  tenant?: (string | null) | Shop
+  name: string
+  showonexplore?: boolean | null
+  slug: string
+  parent: string | Category
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -269,8 +373,125 @@ export interface Category {
     hasNextPage?: boolean
     totalDocs?: number
   }
+  shopSubcategories?: {
+    docs?: (string | Shopcategory)[]
+    hasNextPage?: boolean
+    totalDocs?: number
+  }
   updatedAt: string
   createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock".
+ */
+export interface HeroBlock {
+  /**
+   * Choose layout structure
+   */
+  type: 'imageRight' | 'imageLeft' | 'centered' | 'imageOnly' | 'textOnly'
+  variant?: string | null
+  disabled?: boolean | null
+  settings: {
+    /**
+     * Main headline (max 100 chars for mobile)
+     */
+    heading: string
+    /**
+     * Supporting text (max 200 chars)
+     */
+    subheading?: string | null
+    /**
+     * Upload hero image (recommended: 1200x600px)
+     */
+    image?: (string | null) | Media
+    /**
+     * URL if main image fails to load
+     */
+    fallbackImage?: string | null
+    highlightedContent?: {
+      type?: ('none' | 'product' | 'category') | null
+      product?: (string | null) | Product
+      category?: (string | null) | Category
+    }
+    cta: {
+      primary: {
+        label: string
+        /**
+         * Internal path (e.g., /products) or external URL
+         */
+        href: string
+        target?: ('_self' | '_blank') | null
+      }
+      /**
+       * Optional secondary CTA
+       */
+      secondary?: {
+        label?: string | null
+        href?: string | null
+        target?: ('_self' | '_blank') | null
+      }
+    }
+    styling: {
+      /**
+       * Background color (hex)
+       */
+      bgColor: string
+      /**
+       * Heading text color (hex)
+       */
+      headingColor: string
+      /**
+       * Subheading text color (hex)
+       */
+      subheadingColor: string
+      headingFont?: ('inter' | 'playfair' | 'bebas' | 'jetbrains') | null
+      /**
+       * Border color for images (hex)
+       */
+      borderColor?: string | null
+      /**
+       * Border width in pixels (neobrutalism style)
+       */
+      borderWidth?: number | null
+      /**
+       * Shadow color (hex)
+       */
+      shadowColor?: string | null
+      /**
+       * Shadow offset in pixels
+       */
+      shadowOffset?: number | null
+      /**
+       * Mobile padding in pixels
+       */
+      paddingMobile?: number | null
+      /**
+       * Desktop padding in pixels
+       */
+      paddingDesktop?: number | null
+    }
+    metadata?: {
+      /**
+       * Image alt text for accessibility & SEO
+       */
+      altText?: string | null
+      /**
+       * For analytics tracking (optional)
+       */
+      sectionTitle?: string | null
+    }
+    analytics?: {
+      /**
+       * Custom event tracking ID
+       */
+      trackingId?: string | null
+      conversionGoal?: ('sale' | 'signup' | 'lead' | 'traffic') | null
+    }
+  }
+  id?: string | null
+  blockName?: string | null
+  blockType: 'hero'
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -285,7 +506,7 @@ export interface Product {
    * In Ruppes
    */
   price: number
-  category: string | Category
+  category: string | Shopcategory
   tags?: (string | Tag)[] | null
   medias?: (string | Media)[] | null
   popularity?: number | null
@@ -301,6 +522,44 @@ export interface Tag {
   id: string
   name: string
   products?: (string | Product)[] | null
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shop-templates".
+ */
+export interface ShopTemplate {
+  id: string
+  shop: string | Shop
+  baseTemplate: string | Template
+  /**
+   * Optional: Override theme from base template
+   */
+  themeOverride?: 'hobby-fabric' | null
+  /**
+   * Optional: Override font from base template
+   */
+  fontOverride?: ('inter' | 'poppins') | null
+  sectionOverrides?:
+    | {
+        sectionId: string
+        /**
+         * Settings to override for this section
+         */
+        settings?:
+          | {
+              [k: string]: unknown
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null
+        disabled?: boolean | null
+        id?: string | null
+      }[]
+    | null
   updatedAt: string
   createdAt: string
 }
@@ -351,6 +610,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'shops'
         value: string | Shop
+      } | null)
+    | ({
+        relationTo: 'plans'
+        value: string | Plan
+      } | null)
+    | ({
+        relationTo: 'templates'
+        value: string | Template
+      } | null)
+    | ({
+        relationTo: 'shop-templates'
+        value: string | ShopTemplate
+      } | null)
+    | ({
+        relationTo: 'shopcategories'
+        value: string | Shopcategory
       } | null)
   globalSlug?: string | null
   user: {
@@ -418,6 +693,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  tenant?: T
   alt?: T
   caption?: T
   cloudinary?:
@@ -492,6 +768,7 @@ export interface CategoriesSelect<T extends boolean = true> {
   color?: T
   parent?: T
   subcategories?: T
+  shopSubcategories?: T
   updatedAt?: T
   createdAt?: T
 }
@@ -534,6 +811,193 @@ export interface ShopsSelect<T extends boolean = true> {
   stripeAccountId?: T
   paymentsActivated?: T
   isActive?: T
+  template?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  name?: T
+  slug?: T
+  category?: T
+  allowedSections?: T
+  allowedThemes?: T
+  allowedFonts?: T
+  maxproducts?: T
+  navlinksactivate?: T
+  isDefault?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "templates_select".
+ */
+export interface TemplatesSelect<T extends boolean = true> {
+  name?: T
+  slug?: T
+  plan?: T
+  themePreset?: T
+  fontPreset?: T
+  sections?:
+    | T
+    | {
+        navbar?: T | NavbarBlockSelect<T>
+        hero?: T | HeroBlockSelect<T>
+      }
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NavbarBlock_select".
+ */
+export interface NavbarBlockSelect<T extends boolean = true> {
+  type?: T
+  variant?: T
+  disabled?: T
+  settings?:
+    | T
+    | {
+        layout?: T
+        sticky?: T
+        logo?:
+          | T
+          | {
+              type?: T
+              text?: T
+              logo_image?: T
+            }
+        href?:
+          | T
+          | {
+              linkSource?: T
+              categorieslink?: T
+              links?:
+                | T
+                | {
+                    label?: T
+                    href?: T
+                    external?: T
+                    id?: T
+                  }
+            }
+        showCTA?: T
+        cta?:
+          | T
+          | {
+              label?: T
+              href?: T
+              variant?: T
+            }
+      }
+  sticky?: T
+  id?: T
+  blockName?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  type?: T
+  variant?: T
+  disabled?: T
+  settings?:
+    | T
+    | {
+        heading?: T
+        subheading?: T
+        image?: T
+        fallbackImage?: T
+        highlightedContent?:
+          | T
+          | {
+              type?: T
+              product?: T
+              category?: T
+            }
+        cta?:
+          | T
+          | {
+              primary?:
+                | T
+                | {
+                    label?: T
+                    href?: T
+                    target?: T
+                  }
+              secondary?:
+                | T
+                | {
+                    label?: T
+                    href?: T
+                    target?: T
+                  }
+            }
+        styling?:
+          | T
+          | {
+              bgColor?: T
+              headingColor?: T
+              subheadingColor?: T
+              headingFont?: T
+              borderColor?: T
+              borderWidth?: T
+              shadowColor?: T
+              shadowOffset?: T
+              paddingMobile?: T
+              paddingDesktop?: T
+            }
+        metadata?:
+          | T
+          | {
+              altText?: T
+              sectionTitle?: T
+            }
+        analytics?:
+          | T
+          | {
+              trackingId?: T
+              conversionGoal?: T
+            }
+      }
+  id?: T
+  blockName?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shop-templates_select".
+ */
+export interface ShopTemplatesSelect<T extends boolean = true> {
+  shop?: T
+  baseTemplate?: T
+  themeOverride?: T
+  fontOverride?: T
+  sectionOverrides?:
+    | T
+    | {
+        sectionId?: T
+        settings?: T
+        disabled?: T
+        id?: T
+      }
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shopcategories_select".
+ */
+export interface ShopcategoriesSelect<T extends boolean = true> {
+  tenant?: T
+  name?: T
+  showonexplore?: T
+  slug?: T
+  parent?: T
   updatedAt?: T
   createdAt?: T
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ChartNoAxesGantt } from 'lucide-react'
-import { Category } from '@/payload-types'
 import CategoryItem from './CategoryItem'
 import { cn } from '@/lib/utils'
 import SideCategoriesMenu from './CategoriesMenu'
@@ -10,16 +9,15 @@ import { useTRPC } from '@/components/providers/TrcpProvider'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useParams } from 'next/navigation'
 import { DEFAULT_ALL_CATEGORY_SLUG } from '../constant'
+import type { ExploreCategory } from './types'
 
 const CATEGORY_GAP = 20 // Configurable gap between categories
 
-const AllCategory: Category = {
+const AllCategory: ExploreCategory = {
   id: 'all',
   name: 'All',
   slug: 'all',
   color: '#ffffff',
-  updatedAt: new Date().toISOString(),
-  createdAt: new Date().toISOString(),
   subcategories: {
     docs: [],
   },
@@ -28,6 +26,7 @@ const AllCategory: Category = {
 const Categories = () => {
   const trpc = useTRPC()
   const { data } = useSuspenseQuery(trpc.category.getMany.queryOptions())
+  const categories = data as unknown as ExploreCategory[]
   const params = useParams()
   const categoryParams = params.category as string | undefined
   const activeCategory = categoryParams || DEFAULT_ALL_CATEGORY_SLUG
@@ -38,11 +37,11 @@ const Categories = () => {
   const viewAllButtonRef = useRef<HTMLDivElement | null>(null)
 
   // State management
-  const [visibleCount, setVisibleCount] = useState(data.length)
+  const [visibleCount, setVisibleCount] = useState(categories.length)
   const [isContainerHovered, setIsContainerHovered] = useState(false)
 
   // Find the active category index
-  const activeCategoryIndex = data.findIndex((c) => c.slug === activeCategory)
+  const activeCategoryIndex = categories.findIndex((c) => c.slug === activeCategory)
 
   // Check if active category is hidden
   const isActiveCategoryHidden = activeCategoryIndex >= visibleCount && activeCategoryIndex !== -1
@@ -92,7 +91,7 @@ const Categories = () => {
     return () => {
       resizeObserver.disconnect()
     }
-  }, [data.length])
+  }, [categories.length])
 
   return (
     <div className="relative w-full hidden lg:block   ">
@@ -104,7 +103,7 @@ const Categories = () => {
         aria-hidden="true"
       >
         <CategoryItem key="all-measure" category={AllCategory} ActiveCategory={activeCategory} />
-        {data.map((category) => (
+        {categories.map((category) => (
           <CategoryItem
             key={`${category.id}-measure`}
             category={category}
@@ -125,7 +124,7 @@ const Categories = () => {
         <CategoryItem key="all-visible" category={AllCategory} ActiveCategory={activeCategory} />
 
         {/* Dynamically visible categories */}
-        {data.slice(0, visibleCount).map((category) => (
+        {categories.slice(0, visibleCount).map((category) => (
           <CategoryItem key={category.id} category={category} ActiveCategory={activeCategory} />
         ))}
 

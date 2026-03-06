@@ -1,5 +1,5 @@
 import { DEFAULT_QUERY_PRODUCT_LIMIT, sorted, SortType } from '@/components/Share/constant'
-import { Category, Media, Shop } from '@/payload-types'
+import { Category, Media, Shop, Shopcategory } from '@/payload-types'
 import { createrouter, publicProcedure } from '@/server/trpc'
 import { Where } from 'payload'
 import z from 'zod'
@@ -43,6 +43,26 @@ export const ProductRouter = createrouter({
       }
 
       if (input.category) {
+        const shopCategoryIds = new Set<string>()
+
+        // 1) Exact shop category slug (e.g. /explore/.../tshirts)
+        const exactShopCategory = await ctx.db.find({
+          collection: 'shopcategories',
+          limit: 1,
+          depth: 0,
+          where: {
+            slug: {
+              equals: input.category,
+            },
+          },
+        })
+
+        const directShopCategory = exactShopCategory.docs[0]
+        if (directShopCategory) {
+          shopCategoryIds.add(directShopCategory.id)
+        }
+
+        // 2) Category/subcategory slug (e.g. /explore/clothes or /explore/clothes/men)
         const categoryRes = await ctx.db.find({
           collection: 'categories',
           limit: 1,
@@ -54,22 +74,37 @@ export const ProductRouter = createrouter({
           },
         })
 
-        const category = categoryRes.docs[0]
+        const category = categoryRes.docs[0] as Category | undefined
 
         if (category) {
-          if (category.parent) {
-            // ✅ SUBCATEGORY
-            where.category = {
-              equals: category.id,
-            }
-          } else {
-            // ✅ PARENT CATEGORY
-            const subcategoryIds =
-              (category.subcategories?.docs as Category[] | [])?.map((c) => c.id) ?? []
+          const categoryIds = [category.id]
+          const subcategoryIds =
+            (category.subcategories?.docs as Category[] | [])?.map((sub) => sub.id) ?? []
+          categoryIds.push(...subcategoryIds)
 
-            where.category = {
-              in: [category.id, ...subcategoryIds],
-            }
+          const relatedShopCategories = await ctx.db.find({
+            collection: 'shopcategories',
+            pagination: false,
+            depth: 0,
+            where: {
+              parent: {
+                in: categoryIds,
+              },
+            },
+          })
+
+          for (const shopCat of relatedShopCategories.docs) {
+            shopCategoryIds.add(shopCat.id)
+          }
+        }
+
+        if (shopCategoryIds.size > 0) {
+          const ids = [...shopCategoryIds]
+          where.category = ids.length === 1 ? { equals: ids[0] } : { in: ids }
+        } else {
+          // Unknown category slug: return empty product list instead of unfiltered results.
+          where.id = {
+            equals: '__no_matching_products__',
           }
         }
       }
@@ -99,7 +134,7 @@ export const ProductRouter = createrouter({
         docs: data.docs.map((doc) => ({
           ...doc,
           medias: (doc.medias as Media[]) || [],
-          category: doc.category as Category,
+          category: doc.category as Shopcategory & { parent?: Category },
           tenant: doc.tenant as Shop & { name: string; logo: Media | null },
         })),
         hasNextPage: data.hasNextPage,

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LayoutDashboard, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Menu, Store, X } from 'lucide-react'
 import Logo from './Logo'
 import { routes } from './routes'
 import LinkItem from './LinkItem'
@@ -11,8 +11,7 @@ import Link from 'next/link'
 
 const Header = () => {
   const [open, setOpen] = useState(false)
-  const { userId, orgId, orgRole } = useAuth()
-  console.log('organizationrole', orgRole)
+  const { userId, orgId, orgRole, orgSlug } = useAuth()
   return (
     <header className="w-full bg-white border-b">
       <div className="flex items-center justify-between h-16 ps-4 px-1 sm:max-w-7xl lg:max-w-full mx-auto">
@@ -36,6 +35,12 @@ const Header = () => {
             <>
               <UserButton showName>
                 <UserButton.MenuItems>
+                  <UserButton.Link
+                    label="My Shop"
+                    labelIcon={<Store />}
+                    href={`/shops/${orgSlug}`}
+                  />
+
                   <UserButton.Link
                     label="Dashboard"
                     labelIcon={<LayoutDashboard />}

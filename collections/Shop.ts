@@ -1,8 +1,37 @@
 import { CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook } from 'payload'
 
+const assignDefaultTemplate: CollectionBeforeChangeHook = async ({ data, req, operation }) => {
+  // sirf create pe
+  if (operation !== 'create') return data
+
+  // agar already diya hai (super-admin case)
+  if (data.template) return data
+
+  // default FREE template uthao
+  const defaultTemplate = await req.payload.find({
+    collection: 'templates',
+    where: {
+      isDefault: { equals: true },
+      'plan.category': { equals: 'free' },
+    },
+    limit: 1,
+  })
+
+  if (!defaultTemplate.docs.length) {
+    throw new Error('No default template found')
+  }
+
+  return {
+    ...data,
+    template: defaultTemplate.docs[0].id,
+  }
+}
 const Shops: CollectionConfig = {
   slug: 'shops',
-
+  hooks: {
+    beforeChange: [assignDefaultTemplate],
+  },
   admin: {
     useAsTitle: 'name',
   },
@@ -87,6 +116,12 @@ const Shops: CollectionConfig = {
       admin: {
         description: 'Disable shop without deleting it',
       },
+    },
+    //active templates
+    {
+      name: 'template',
+      type: 'relationship',
+      relationTo: 'templates',
     },
   ],
 }

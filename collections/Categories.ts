@@ -1,9 +1,15 @@
 import { CollectionConfig } from 'payload'
+import { isSuperAdmin } from './lib/access/isSuperAdmin'
 
 const Categories: CollectionConfig = {
   slug: 'categories',
   admin: {
     useAsTitle: 'name',
+  },
+  access: {
+    create: isSuperAdmin,
+    update: isSuperAdmin,
+    delete: isSuperAdmin,
   },
   fields: [
     {
@@ -32,6 +38,12 @@ const Categories: CollectionConfig = {
       name: 'subcategories',
       type: 'join',
       collection: 'categories',
+      on: 'parent',
+    },
+    {
+      name: 'shopSubcategories',
+      type: 'join',
+      collection: 'shopcategories',
       on: 'parent',
     },
   ],

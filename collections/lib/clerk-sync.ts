@@ -84,18 +84,30 @@ async function upsertPayloadUserFromClerk(data: ClerkUserWebhookData) {
   if (existingByClerkId.docs[0]) {
     const nextRoles =
       incomingRoles || sanitizeRoles(existingByClerkId.docs[0].roles, [DEFAULT_ROLE])
+    const updateData = {
+      email,
+      firstName,
+      lastName,
+      roles: nextRoles,
+    }
 
-    return payload.update({
-      collection: 'users',
-      id: existingByClerkId.docs[0].id,
-      overrideAccess: true,
-      data: {
-        email,
-        firstName,
-        lastName,
-        roles: nextRoles,
-      },
-    })
+    try {
+      return await payload.update({
+        collection: 'users',
+        id: existingByClerkId.docs[0].id,
+        overrideAccess: true,
+        data: updateData,
+      })
+    } catch (error) {
+      console.error('users update failed (existingByClerkId)', {
+        clerkUserId: data.id,
+        updateData,
+        existingDocId: existingByClerkId.docs[0].id,
+        existingDocKeys: Object.keys(existingByClerkId.docs[0] || {}),
+        error,
+      })
+      throw error
+    }
   }
 
   const existingByEmail = await payload.find({
@@ -107,31 +119,54 @@ async function upsertPayloadUserFromClerk(data: ClerkUserWebhookData) {
 
   if (existingByEmail.docs[0]) {
     const nextRoles = incomingRoles || sanitizeRoles(existingByEmail.docs[0].roles, [DEFAULT_ROLE])
-
-    return payload.update({
-      collection: 'users',
-      id: existingByEmail.docs[0].id,
-      overrideAccess: true,
-      data: {
-        clerkUserId: data.id,
-        firstName,
-        lastName,
-        roles: nextRoles,
-      },
-    })
-  }
-
-  return payload.create({
-    collection: 'users',
-    overrideAccess: true,
-    data: {
+    const updateData = {
       clerkUserId: data.id,
-      email,
       firstName,
       lastName,
-      roles: incomingRoles || [DEFAULT_ROLE],
-    },
-  })
+      roles: nextRoles,
+    }
+
+    try {
+      return await payload.update({
+        collection: 'users',
+        id: existingByEmail.docs[0].id,
+        overrideAccess: true,
+        data: updateData,
+      })
+    } catch (error) {
+      console.error('users update failed (existingByEmail)', {
+        clerkUserId: data.id,
+        updateData,
+        existingDocId: existingByEmail.docs[0].id,
+        existingDocKeys: Object.keys(existingByEmail.docs[0] || {}),
+        error,
+      })
+      throw error
+    }
+  }
+
+  const createData = {
+    clerkUserId: data.id,
+    email,
+    firstName,
+    lastName,
+    roles: incomingRoles || [DEFAULT_ROLE],
+  }
+
+  try {
+    return await payload.create({
+      collection: 'users',
+      overrideAccess: true,
+      data: createData,
+    })
+  } catch (error) {
+    console.error('users create failed', {
+      clerkUserId: data.id,
+      createData,
+      error,
+    })
+    throw error
+  }
 }
 
 async function addShopToUser(clerkUserId: string, shopId: string) {
@@ -230,17 +265,60 @@ async function ensurePayloadUserExists(clerkUserId: string) {
   const email = primaryEmail.trim().toLowerCase()
   if (!email) return null
 
-  return payload.create({
+  const existingByEmail = await payload.find({
     collection: 'users',
+    where: { email: { equals: email } },
+    limit: 1,
     overrideAccess: true,
-    data: {
-      clerkUserId,
-      email,
-      firstName: clerkUser.firstName || '',
-      lastName: clerkUser.lastName || '',
-      roles: [DEFAULT_ROLE],
-    },
   })
+
+  if (existingByEmail.docs[0]) {
+    return payload.update({
+      collection: 'users',
+      id: existingByEmail.docs[0].id,
+      overrideAccess: true,
+      data: {
+        clerkUserId,
+        firstName: clerkUser.firstName || '',
+        lastName: clerkUser.lastName || '',
+      },
+    })
+  }
+
+  try {
+    return await payload.create({
+      collection: 'users',
+      overrideAccess: true,
+      data: {
+        clerkUserId,
+        email,
+        firstName: clerkUser.firstName || '',
+        lastName: clerkUser.lastName || '',
+        roles: [DEFAULT_ROLE],
+      },
+    })
+  } catch (error) {
+    // user.created and organization.created can race for the same email
+    const racedByEmail = await payload.find({
+      collection: 'users',
+      where: { email: { equals: email } },
+      limit: 1,
+      overrideAccess: true,
+    })
+
+    if (!racedByEmail.docs[0]) throw error
+
+    return payload.update({
+      collection: 'users',
+      id: racedByEmail.docs[0].id,
+      overrideAccess: true,
+      data: {
+        clerkUserId,
+        firstName: clerkUser.firstName || '',
+        lastName: clerkUser.lastName || '',
+      },
+    })
+  }
 }
 
 export async function syncUserToPayload(evt: WebhookEvent) {
@@ -320,6 +398,7 @@ export async function syncUserToPayload(evt: WebhookEvent) {
         ShopDoc = await payload.create({
           collection: 'shops',
           overrideAccess: true,
+          draft: false,
           data: {
             organizationId: evt.data.id,
             name: orgData.name || `Organization ${orgData.id}`,

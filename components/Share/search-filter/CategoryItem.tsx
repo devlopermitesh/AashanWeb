@@ -1,17 +1,17 @@
 'use client'
 import { Button } from '@/components/ui/button'
 import useDropDirection from '@/hooks/use-Dropdirection'
-import { Category } from '@/payload-types'
 import { useRef, useState } from 'react'
 import SubCategoriesMenu from './SubCategoriesMenu'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import type { ExploreCategory } from './types'
 
 const CategoryItem = ({
   category,
   ActiveCategory,
 }: {
-  category: Category
+  category: ExploreCategory
   ActiveCategory: string
 }) => {
   const [isOpen, setOpen] = useState(false)
