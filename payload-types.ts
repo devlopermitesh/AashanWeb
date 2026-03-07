@@ -71,6 +71,7 @@ export interface Config {
     media: Media
     categories: Category
     products: Product
+    productcollections: Productcollection
     tags: Tag
     shops: Shop
     plans: Plan
@@ -93,6 +94,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>
     categories: CategoriesSelect<false> | CategoriesSelect<true>
     products: ProductsSelect<false> | ProductsSelect<true>
+    productcollections: ProductcollectionsSelect<false> | ProductcollectionsSelect<true>
     tags: TagsSelect<false> | TagsSelect<true>
     shops: ShopsSelect<false> | ShopsSelect<true>
     plans: PlansSelect<false> | PlansSelect<true>
@@ -280,7 +282,7 @@ export interface Template {
   /**
    * Template sections. Add one or more blocks (currently navbar).
    */
-  sections: (NavbarBlock | HeroBlock)[]
+  sections: (NavbarBlock | HeroBlock | ProductGridBlock)[]
   updatedAt: string
   createdAt: string
 }
@@ -293,7 +295,7 @@ export interface Plan {
   name: string
   slug: string
   category: 'free' | 'paid'
-  allowedSections: ('navbar' | 'hero')[]
+  allowedSections: ('navbar' | 'hero' | 'productgrid')[]
   allowedThemes: 'hobby-fabric'[]
   allowedFonts: ('inter' | 'poppins')[]
   maxproducts?: number | null
@@ -502,14 +504,57 @@ export interface Product {
   id: string
   tenant?: (string | null) | Shop
   name: string
+  /**
+   * Auto-generated from name when empty.
+   */
+  slug: string
   description?: string | null
   /**
-   * In Ruppes
+   * Default gallery media for this product.
+   */
+  medias?: (string | Media)[] | null
+  /**
+   * Enable if product media changes by color.
+   */
+  hasManyColors?: boolean | null
+  /**
+   * Use when each color has a dedicated image.
+   */
+  mediaVariants?:
+    | {
+        colorName: string
+        colorCode: string
+        image: string | Media
+        id?: string | null
+      }[]
+    | null
+  /**
+   * Current selling price in rupees.
    */
   price: number
+  /**
+   * MRP in rupees. Used to compute sale badges.
+   */
+  originalPrice: number
+  rating?: number | null
+  reviewCount?: number | null
+  /**
+   * If 0, product is automatically marked out of stock.
+   */
+  availableStockCount?: number | null
+  inStock?: boolean | null
+  featured?: boolean | null
+  onSale?: boolean | null
+  isNewProduct?: boolean | null
+  /**
+   * Total units sold.
+   */
+  sales?: number | null
   category: string | Shopcategory
   tags?: (string | Tag)[] | null
-  medias?: (string | Media)[] | null
+  /**
+   * Derived from sales and review volume.
+   */
   popularity?: number | null
   refundpolicy?: ('30-days' | '15-days' | '10-days' | '5-days') | null
   updatedAt: string
@@ -522,6 +567,203 @@ export interface Product {
 export interface Tag {
   id: string
   name: string
+  products?: (string | Product)[] | null
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductGridBlock".
+ */
+export interface ProductGridBlock {
+  type: 'productgrid'
+  variant?: string | null
+  disabled?: boolean | null
+  settings: {
+    content: {
+      /**
+       * Section title
+       */
+      title: string
+      showTitle?: boolean | null
+      /**
+       * Optional subtitle/description
+       */
+      description?: string | null
+      showDescription?: boolean | null
+      /**
+       * Where to get products from
+       */
+      source: 'category' | 'collection' | 'manual'
+      /**
+       * Select category to display
+       */
+      category?: (string | Shopcategory)[] | null
+      /**
+       * Select collection to display
+       */
+      collection?: (string | null) | Productcollection
+      /**
+       * Manually select products (order matters)
+       */
+      products?: (string | Product)[] | null
+      /**
+       * Max products to show (Free: max 10, Pro: max 50)
+       */
+      limit: number
+      /**
+       * Only show products marked as featured
+       */
+      featured?: boolean | null
+    }
+    layout: {
+      /**
+       * Choose layout type
+       */
+      type: 'grid' | 'carousel' | 'masonry'
+      /**
+       * Responsive columns (Desktop-Tablet-Mobile)
+       */
+      gridColumns?: ('preset-1' | 'preset-2' | 'preset-3' | 'auto') | null
+      /**
+       * Items visible per view
+       */
+      carouselItems?: ('1' | '2' | '3' | '4') | null
+      carouselAutoScroll?: boolean | null
+      /**
+       * Auto scroll interval
+       */
+      carouselSpeed?: ('3' | '5' | '7') | null
+      /**
+       * Space between items
+       */
+      gap: '16' | '24' | '32' | '40'
+    }
+    card: {
+      /**
+       * Product image aspect ratio
+       */
+      imageAspect: 'square' | '16:9' | '9:16' | 'cover' | 'contain'
+      /**
+       * Hover effect on image
+       */
+      imageHover: 'zoom' | 'fade' | 'slide' | 'none'
+      style: {
+        /**
+         * Card corner radius
+         */
+        borderRadius: '0' | '4' | '8' | '12' | '16' | '9999'
+        /**
+         * Card shadow intensity
+         */
+        shadow: 'none' | 'light' | 'medium' | 'heavy'
+        /**
+         * Card background color (hex)
+         */
+        backgroundColor?: string | null
+        showBorder?: boolean | null
+        /**
+         * Border color (hex)
+         */
+        borderColor?: string | null
+        borderWidth?: ('1' | '2' | '3') | null
+      }
+      /**
+       * Internal card padding
+       */
+      padding: '8' | '12' | '16' | '20'
+    }
+    display?: {
+      image?: boolean | null
+      title?: boolean | null
+      price?: {
+        show?: boolean | null
+        format?: 'default' | null
+      }
+      rating?: {
+        show?: boolean | null
+        style?: ('stars' | 'number') | null
+        showCount?: boolean | null
+      }
+      category?: boolean | null
+      badge?: {
+        show?: boolean | null
+        style?: ('sale' | 'new' | 'both') | null
+        position?: ('top-left' | 'top-right' | 'bottom-left' | 'bottom-right') | null
+      }
+      description?: boolean | null
+      stock?: boolean | null
+    }
+    actions?: {
+      addToCart?: {
+        show?: boolean | null
+        style?: ('button' | 'icon' | 'button-icon') | null
+        text?: string | null
+        fullWidth?: boolean | null
+      }
+      quickView?: {
+        /**
+         * Pro feature - may be disabled based on plan
+         */
+        show?: boolean | null
+      }
+      wishlist?: {
+        /**
+         * Pro feature - may be disabled based on plan
+         */
+        show?: boolean | null
+      }
+      share?: boolean | null
+    }
+    data: {
+      /**
+       * How to sort products
+       */
+      sortBy: 'manual' | 'newest' | 'bestseller' | 'price-low' | 'price-high' | 'rating'
+      /**
+       * Show sort dropdown on frontend
+       */
+      sortAllowCustomer?: boolean | null
+    }
+    pagination: {
+      /**
+       * How customers navigate through products
+       */
+      type: 'none' | 'pagination' | 'load-more' | 'infinite-scroll'
+      /**
+       * Items per page
+       */
+      itemsPerPage?: number | null
+      loadMoreText?: string | null
+    }
+    visibility?: {
+      showOnMobile?: boolean | null
+      showOnTablet?: boolean | null
+      showOnDesktop?: boolean | null
+    }
+    analytics?: {
+      /**
+       * Unique ID for analytics tracking
+       */
+      trackingId?: string | null
+      /**
+       * What conversion goal to track
+       */
+      goalType?: ('sales' | 'views' | 'engagement') | null
+    }
+  }
+  id?: string | null
+  blockName?: string | null
+  blockType: 'productgrid'
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productcollections".
+ */
+export interface Productcollection {
+  id: string
+  name: string
+  slug: string
   products?: (string | Product)[] | null
   updatedAt: string
   createdAt: string
@@ -603,6 +845,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products'
         value: string | Product
+      } | null)
+    | ({
+        relationTo: 'productcollections'
+        value: string | Productcollection
       } | null)
     | ({
         relationTo: 'tags'
@@ -780,13 +1026,43 @@ export interface CategoriesSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   tenant?: T
   name?: T
+  slug?: T
   description?: T
+  medias?: T
+  hasManyColors?: T
+  mediaVariants?:
+    | T
+    | {
+        colorName?: T
+        colorCode?: T
+        image?: T
+        id?: T
+      }
   price?: T
+  originalPrice?: T
+  rating?: T
+  reviewCount?: T
+  availableStockCount?: T
+  inStock?: T
+  featured?: T
+  onSale?: T
+  isNewProduct?: T
+  sales?: T
   category?: T
   tags?: T
-  medias?: T
   popularity?: T
   refundpolicy?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "productcollections_select".
+ */
+export interface ProductcollectionsSelect<T extends boolean = true> {
+  name?: T
+  slug?: T
+  products?: T
   updatedAt?: T
   createdAt?: T
 }
@@ -849,6 +1125,7 @@ export interface TemplatesSelect<T extends boolean = true> {
     | {
         navbar?: T | NavbarBlockSelect<T>
         hero?: T | HeroBlockSelect<T>
+        productgrid?: T | ProductGridBlockSelect<T>
       }
   updatedAt?: T
   createdAt?: T
@@ -965,6 +1242,140 @@ export interface HeroBlockSelect<T extends boolean = true> {
           | {
               trackingId?: T
               conversionGoal?: T
+            }
+      }
+  id?: T
+  blockName?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProductGridBlock_select".
+ */
+export interface ProductGridBlockSelect<T extends boolean = true> {
+  type?: T
+  variant?: T
+  disabled?: T
+  settings?:
+    | T
+    | {
+        content?:
+          | T
+          | {
+              title?: T
+              showTitle?: T
+              description?: T
+              showDescription?: T
+              source?: T
+              category?: T
+              collection?: T
+              products?: T
+              limit?: T
+              featured?: T
+            }
+        layout?:
+          | T
+          | {
+              type?: T
+              gridColumns?: T
+              carouselItems?: T
+              carouselAutoScroll?: T
+              carouselSpeed?: T
+              gap?: T
+            }
+        card?:
+          | T
+          | {
+              imageAspect?: T
+              imageHover?: T
+              style?:
+                | T
+                | {
+                    borderRadius?: T
+                    shadow?: T
+                    backgroundColor?: T
+                    showBorder?: T
+                    borderColor?: T
+                    borderWidth?: T
+                  }
+              padding?: T
+            }
+        display?:
+          | T
+          | {
+              image?: T
+              title?: T
+              price?:
+                | T
+                | {
+                    show?: T
+                    format?: T
+                  }
+              rating?:
+                | T
+                | {
+                    show?: T
+                    style?: T
+                    showCount?: T
+                  }
+              category?: T
+              badge?:
+                | T
+                | {
+                    show?: T
+                    style?: T
+                    position?: T
+                  }
+              description?: T
+              stock?: T
+            }
+        actions?:
+          | T
+          | {
+              addToCart?:
+                | T
+                | {
+                    show?: T
+                    style?: T
+                    text?: T
+                    fullWidth?: T
+                  }
+              quickView?:
+                | T
+                | {
+                    show?: T
+                  }
+              wishlist?:
+                | T
+                | {
+                    show?: T
+                  }
+              share?: T
+            }
+        data?:
+          | T
+          | {
+              sortBy?: T
+              sortAllowCustomer?: T
+            }
+        pagination?:
+          | T
+          | {
+              type?: T
+              itemsPerPage?: T
+              loadMoreText?: T
+            }
+        visibility?:
+          | T
+          | {
+              showOnMobile?: T
+              showOnTablet?: T
+              showOnDesktop?: T
+            }
+        analytics?:
+          | T
+          | {
+              trackingId?: T
+              goalType?: T
             }
       }
   id?: T

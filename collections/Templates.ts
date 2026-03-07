@@ -4,6 +4,7 @@ import { SECTIONS_FONTS, SECTIONS_THEMES } from '@/config/theme/available'
 import { isAdminEnabledRoles } from './lib/access/isAdminEnabledRoles'
 import { NavbarBlock } from '@/blocks/navbar/navbar.block'
 import { HeroBlock } from '@/blocks/Hero/hero-block'
+import { ProductGridBlock } from '@/blocks/productGrid/product-block'
 
 export const Templates: CollectionConfig = {
   slug: 'templates',
@@ -14,7 +15,7 @@ export const Templates: CollectionConfig = {
   access: {
     read: () => true,
     create: isSuperAdmin,
-    update: isAdminEnabledRoles,
+    update: isSuperAdmin,
     delete: isSuperAdmin,
   },
   fields: [
@@ -68,7 +69,7 @@ export const Templates: CollectionConfig = {
       type: 'blocks',
       required: true,
       minRows: 1,
-      blocks: [NavbarBlock, HeroBlock],
+      blocks: [NavbarBlock, HeroBlock, ProductGridBlock],
       admin: {
         description: 'Template sections. Add one or more blocks (currently navbar).',
       },

@@ -18,6 +18,7 @@ import { Plans } from './collections/Plans'
 import { Templates } from './collections/Templates'
 import { ShopTemplates } from './collections/ShopTemplates'
 import { ShopCategories } from './collections/ShopCategories'
+import { ProductCollections } from './collections/Productcollection'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 export default buildConfig({
@@ -51,6 +52,7 @@ export default buildConfig({
     Media,
     Categories,
     Product,
+    ProductCollections,
     Tags,
     Shops,
     Plans,

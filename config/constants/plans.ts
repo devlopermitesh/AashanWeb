@@ -11,7 +11,7 @@ type PlanFeatures = {
 export const PLAN_FEATURES: Record<'free' | 'premium', PlanFeatures> = {
   free: {
     maxProducts: 50,
-    sections: ['navbar', 'hero'],
+    sections: ['navbar', 'hero', 'productgrid'],
     themes: ['hobby-fabric'],
   },
   premium: {
