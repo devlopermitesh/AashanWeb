@@ -9,6 +9,7 @@ import { CSSProperties } from 'react'
 
 interface Props {
   id: string
+  slug?: string
   name: string
   imageUrl: string
   authorUsername: string
@@ -23,6 +24,7 @@ interface Props {
 
 const ProductCard = ({
   id,
+  slug,
   name,
   imageUrl,
   authorUsername,
@@ -35,7 +37,7 @@ const ProductCard = ({
   style,
 }: Props) => {
   return (
-    <Link href={`/product/${id}`}>
+    <Link href={`/product/${slug || id}`}>
       <Card
         style={style}
         className={cn(

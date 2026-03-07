@@ -3,17 +3,18 @@ import { notFound } from 'next/navigation'
 import SectionRenderer from '@/modules/shop/ui/view/SectionRenderer'
 import { FONTS, getTheme, type Plan, type SectionConfig } from '@/config'
 import type { CSSProperties } from 'react'
-import type { HeroBlock, NavbarBlock } from '@/payload-types'
+import type { Template } from '@/payload-types'
 import { normalizeNavbarSettings } from '@/blocks/navbar/navbar-layout'
 import { normalizeHeroSettings } from '@/blocks/Hero/hero-layout'
 
 export const revalidate = 60
 interface Props {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 type SectionSettingsNormalizer = (value: Record<string, unknown>) => SectionConfig['settings']
+type TemplateSection = Template['sections'][number]
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -38,15 +39,20 @@ const mergeSectionSettings = (
   return normalize ? normalize(merged) : (merged as unknown as SectionConfig['settings'])
 }
 
-const getBlockSettings = (section: NavbarBlock | HeroBlock): unknown => {
-  if (section.blockType === 'navbar') {
-    return section.settings
-  }
-
-  // Hero keeps content inside `settings`, while layout selector lives at top-level `type`.
-  return {
-    type: section.type,
-    ...(isRecord(section.settings) ? section.settings : {}),
+const getBlockSettings = (section: TemplateSection): unknown => {
+  switch (section.blockType) {
+    case 'navbar':
+      return section.settings
+    case 'hero':
+      // Hero keeps content inside `settings`, while layout selector lives at top-level `type`.
+      return {
+        type: section.type,
+        ...(isRecord(section.settings) ? section.settings : {}),
+      }
+    case 'productgrid':
+      return section.settings
+    default:
+      return {}
   }
 }
 
@@ -57,7 +63,6 @@ const Page = async ({ params }: Props) => {
     if (!shop?.id) {
       notFound()
     }
-    console.log('Shop', shop)
     const shopTemplate = await caller.shopTemplate.getShop({
       shopId: shop.id,
     })
@@ -102,7 +107,7 @@ const Page = async ({ params }: Props) => {
       color: theme.text,
       fontFamily: font.body,
     }
-
+    console.log('finalSectins', finalSections)
     return (
       <div style={tenantStyle} data-theme={themePreset} data-font={fontPreset}>
         <SectionRenderer sections={finalSections} plan={plan} />
