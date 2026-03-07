@@ -54,6 +54,7 @@ export const ProductList = ({ category }: { category?: string }) => {
                 <ProductCard
                   key={product.id}
                   id={product.id}
+                  slug={product.slug || product.id}
                   name={product.name}
                   imageUrl={product.medias?.[0]?.url ?? '/placeholder.jpg'}
                   authorUsername={product.tenant?.name || 'plateform purchase'}

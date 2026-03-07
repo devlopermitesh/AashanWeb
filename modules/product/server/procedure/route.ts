@@ -1,5 +1,5 @@
 import { DEFAULT_QUERY_PRODUCT_LIMIT, sorted, SortType } from '@/components/Share/constant'
-import { Category, Media, Shop, Shopcategory } from '@/payload-types'
+import { Category, Media, Shop, Shopcategory, Tag } from '@/payload-types'
 import { createrouter, publicProcedure } from '@/server/trpc'
 import { Where } from 'payload'
 import z from 'zod'
@@ -10,6 +10,23 @@ export const SORT_MAP = {
   'price-desc': '-price',
   'price-asc': 'price',
 } satisfies Record<SortType, string>
+
+const toProductResponse = <T extends object>(doc: T) => {
+  const source = doc as T & {
+    medias?: Media[] | null
+    category?: unknown
+    tenant?: unknown
+    tags?: Tag[] | null
+  }
+
+  return {
+    ...doc,
+    medias: (source.medias ?? []) as Media[],
+    category: source.category as Shopcategory & { parent?: Category },
+    tenant: source.tenant as Shop & { name: string; logo: Media | null },
+    tags: (source.tags ?? []) as Tag[],
+  }
+}
 
 export const ProductRouter = createrouter({
   getMany: publicProcedure
@@ -131,15 +148,54 @@ export const ProductRouter = createrouter({
       })
 
       return {
-        docs: data.docs.map((doc) => ({
-          ...doc,
-          medias: (doc.medias as Media[]) || [],
-          category: doc.category as Shopcategory & { parent?: Category },
-          tenant: doc.tenant as Shop & { name: string; logo: Media | null },
-        })),
+        docs: data.docs.map((doc) => toProductResponse(doc)),
         hasNextPage: data.hasNextPage,
         totalDocs: data.totalDocs,
         nextCursor: data.nextPage ?? null, // 👈 this is the key part
       }
+    }),
+  getOne: publicProcedure
+    .input(
+      z.object({
+        slug: z.string().min(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const slug = input.slug.trim()
+      if (!slug) {
+        return null
+      }
+
+      const findProduct = async (where: Where) =>
+        ctx.db.find({
+          collection: 'products',
+          depth: 2,
+          limit: 1,
+          where,
+        })
+
+      const bySlug = await findProduct({
+        slug: {
+          equals: slug,
+        },
+      })
+
+      const slugDoc = bySlug.docs[0]
+      if (slugDoc) {
+        return toProductResponse(slugDoc)
+      }
+
+      const byId = await findProduct({
+        id: {
+          equals: slug,
+        },
+      })
+
+      const idDoc = byId.docs[0]
+      if (!idDoc) {
+        return null
+      }
+
+      return toProductResponse(idDoc)
     }),
 })

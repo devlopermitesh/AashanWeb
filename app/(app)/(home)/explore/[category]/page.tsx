@@ -8,9 +8,9 @@ import ProductSort from '@/modules/product/ui/product-sort'
 import { ProductView } from '@/modules/product/ui/view/product-view'
 
 interface Props {
-  params: {
+  params: Promise<{
     category: string
-  }
+  }>
   searchParams: Promise<SearchParams>
 }
 const Page = async ({ params, searchParams }: Props) => {
