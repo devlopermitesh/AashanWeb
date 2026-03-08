@@ -20,6 +20,7 @@ interface ProductDetailsPurchaseProps {
   colors: ProductDetailColorOption[]
   selectedColorId: string | null
   onSelectColor: (colorId: string) => void
+  AddTocart: () => void
 }
 
 const clampQuantity = (value: number, stockCount: number): number =>
@@ -40,6 +41,7 @@ export const ProductDetailsPurchase = ({
   colors,
   selectedColorId,
   onSelectColor,
+  AddTocart,
 }: ProductDetailsPurchaseProps) => {
   const roundedRating = Math.min(5, Math.max(0, Math.round(rating)))
   const discountPercent =
@@ -136,6 +138,7 @@ export const ProductDetailsPurchase = ({
         </div>
 
         <button
+          onClick={inStock ? AddTocart : () => {}}
           type="button"
           disabled={!inStock}
           className={cn(

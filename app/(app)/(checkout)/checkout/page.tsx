@@ -1,5 +1,6 @@
-'use client'
+import CheckOutView from '@/modules/checkout/ui/components/view/CheckOutView'
+
 const Page = () => {
-  return <h2>Checkout </h2>
+  return <CheckOutView />
 }
 export default Page

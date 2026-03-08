@@ -4,6 +4,7 @@ import { HydrateClient } from '@/trpc/server'
 import BreadCrumbList from '../BreadCrumbList'
 import { Suspense } from 'react'
 import CartButton from '../CartButton'
+
 const SearchFilter = async () => {
   return (
     <HydrateClient>

@@ -9,6 +9,9 @@ import type {
   ProductDetailImage,
   ProductDetailsData,
 } from '../product-detail-types'
+import useCart from '@/modules/checkout/store/use-cart'
+import BreadCrumbList from '@/components/Share/BreadCrumbList'
+import CartButton from '@/components/Share/CartButton'
 
 const REFUND_POLICY_LABEL: Record<string, string> = {
   '30-days': '30 days return policy',
@@ -107,6 +110,7 @@ interface ProductDetailsProps {
 }
 
 const ProductDetails = ({ product }: ProductDetailsProps) => {
+  const { addProduct } = useCart()
   const productName = product.name?.trim() || 'Untitled product'
   const rating = Math.max(0, Math.min(5, toNumber(product.rating, 0)))
   const reviewCount = Math.max(0, Math.round(toNumber(product.reviewCount, 0)))
@@ -218,8 +222,20 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
     setQuantity(Math.min(Math.max(1, nextValue), maxAllowed))
   }
 
+  const handleAddtobag = () => {
+    if (!product.tenant.id || !product.id) return
+    addProduct(product.tenant.id, product.id, {
+      quantity,
+      variantId: selectedColorId ? selectedColorId : undefined,
+    })
+  }
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 lg:py-10">
+      {/* header */}
+      <div className="flex flex-row w-full h-16 justify-between">
+        <BreadCrumbList />
+        <CartButton />
+      </div>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
         <ProductDetailsGallery
           images={galleryImages}
@@ -241,6 +257,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
           colors={colors}
           selectedColorId={selectedColorId}
           onSelectColor={handleColorSelect}
+          AddTocart={handleAddtobag}
         />
       </div>
 

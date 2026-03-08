@@ -1,8 +1,9 @@
 'use client'
 
 import Logo from '@/components/Header/Logo'
-import { ShieldCheck } from 'lucide-react'
+import { ArrowRight, ShieldCheck } from 'lucide-react'
 import CartButton from '../../../../../components/Share/CartButton'
+import Link from 'next/link'
 
 const CheckoutNavbar = () => {
   return (
@@ -22,8 +23,14 @@ const CheckoutNavbar = () => {
             </h1>
           </div>
         </div>
-
-        <CartButton className="shrink-0" />
+        <Link href={'/explore/all'}>
+          <div className="mx-auto flex w-fit max-w-full items-center gap-2 rounded-2xl border-2 border-black bg-white px-3 py-2 shadow-[4px_4px_0_#111] sm:px-4">
+            <h1 className="truncate text-xs font-black uppercase tracking-[0.06em] sm:text-sm md:text-base">
+              Continue Shoping
+            </h1>
+            <ArrowRight size={18} className="shrink-0" />
+          </div>
+        </Link>
       </div>
     </header>
   )
