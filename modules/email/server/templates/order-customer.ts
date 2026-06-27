@@ -6,6 +6,8 @@ type OrderItemLike = {
   product?: { name?: string | null } | string | null
 }
 
+type DeliveryLocationLike = string | { address?: string | null } | null
+
 type OrderLike = {
   id: string
   orderNumber?: number | null
@@ -13,7 +15,7 @@ type OrderLike = {
   customerName?: string | null
   customerPhone?: string | null
   billingAddress?: string | null
-  deliveryLocation?: string | null
+  deliveryLocation?: DeliveryLocationLike
   instructions?: string | null
   totalAmount?: number | null
   items?: OrderItemLike[] | null

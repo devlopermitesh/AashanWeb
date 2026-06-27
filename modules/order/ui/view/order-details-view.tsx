@@ -18,6 +18,12 @@ const getProductName = (value: unknown): string | null => {
   return typeof value.name === 'string' && value.name ? value.name : null
 }
 
+const formatDeliveryLocation = (value: unknown): string => {
+  if (typeof value === 'string') return value
+  if (!isRecord(value)) return ''
+  return typeof value.address === 'string' ? value.address : ''
+}
+
 const formatOrderDateTime = (value: unknown): string => {
   const date = value instanceof Date ? value : new Date(String(value ?? ''))
   if (Number.isNaN(date.getTime())) return ''
@@ -74,6 +80,7 @@ export const OrderDetailsView = ({ orderId }: { orderId: string }) => {
   const status = (order.orderStatus ?? 'pending') as OrderStatus
   const totalINR = currencyFormatter.format(order.totalAmount ?? 0)
   const items = order.items ?? []
+  const deliveryLocation = formatDeliveryLocation(order.deliveryLocation)
 
   return (
     <section className="w-full flex-1 bg-background">
@@ -128,9 +135,7 @@ export const OrderDetailsView = ({ orderId }: { orderId: string }) => {
                 </div>
                 <div className="sm:col-span-2 rounded-base border-2 border-border bg-background p-4 shadow-shadow">
                   <p className="text-xs font-base text-foreground/70">Address</p>
-                  <p className="text-sm font-heading text-foreground">
-                    {order.deliveryLocation ?? '—'}
-                  </p>
+                  <p className="text-sm font-heading text-foreground">{deliveryLocation || '—'}</p>
                 </div>
                 <div className="sm:col-span-2 rounded-base border-2 border-border bg-background p-4 shadow-shadow">
                   <p className="text-xs font-base text-foreground/70">Instructions</p>

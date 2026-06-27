@@ -6,22 +6,30 @@ type OrderItemLike = {
   product?: { name?: string | null } | string | null
 }
 
+type DeliveryLocationLike = string | { address?: string | null } | null
+
 type OrderLike = {
   id: string
   orderNumber?: number | null
   createdAt?: string | null
   customerName?: string | null
   customerPhone?: string | null
-  deliveryLocation?: string | null
+  deliveryLocation?: DeliveryLocationLike
   instructions?: string | null
   totalAmount?: number | null
   items?: OrderItemLike[] | null
   tenant?: { name?: string | null } | string | null
 }
 
+const formatDeliveryLocation = (deliveryLocation?: DeliveryLocationLike): string => {
+  if (typeof deliveryLocation === 'string') return deliveryLocation
+  return deliveryLocation?.address || ''
+}
+
 export function buildShopOwnerOrderEmail(args: { order: OrderLike }) {
   const { order } = args
   const orderLabel = order.orderNumber ? `#${order.orderNumber}` : order.id
+  const deliveryLocation = formatDeliveryLocation(order.deliveryLocation)
   const shopName =
     typeof order.tenant === 'object' && order.tenant && 'name' in order.tenant
       ? order.tenant.name
@@ -58,7 +66,7 @@ export function buildShopOwnerOrderEmail(args: { order: OrderLike }) {
       <p style="margin:0 0 12px; color:#374151;">
         Placed: ${escapeHtml(formatDateTime(order.createdAt))}
       </p>
-      ${order.deliveryLocation ? `<p style="margin:0 0 12px; color:#374151;">Delivery: ${escapeHtml(order.deliveryLocation)}</p>` : ''}
+      ${deliveryLocation ? `<p style="margin:0 0 12px; color:#374151;">Delivery: ${escapeHtml(deliveryLocation)}</p>` : ''}
       ${order.instructions ? `<p style="margin:0 0 12px; color:#374151;">Instructions: ${escapeHtml(order.instructions)}</p>` : ''}
       <table style="width:100%; border-collapse:collapse; font-size:14px; margin-top:12px;">
         <thead>
@@ -89,7 +97,7 @@ export function buildShopOwnerOrderEmail(args: { order: OrderLike }) {
   if (shopName) textLines.push(`Shop: ${shopName}`)
   if (order.customerName) textLines.push(`Customer: ${order.customerName}`)
   if (order.customerPhone) textLines.push(`Phone: ${order.customerPhone}`)
-  if (order.deliveryLocation) textLines.push(`Delivery: ${order.deliveryLocation}`)
+  if (deliveryLocation) textLines.push(`Delivery: ${deliveryLocation}`)
   if (order.instructions) textLines.push(`Instructions: ${order.instructions}`)
   textLines.push('')
   for (const item of order.items || []) {
