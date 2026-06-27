@@ -4,6 +4,7 @@ import { HydrateClient } from '@/trpc/server'
 import BreadCrumbList from '../BreadCrumbList'
 import { Suspense } from 'react'
 import CartButton from '../CartButton'
+import OrderLink from '../OrderButton'
 
 const SearchFilter = async () => {
   return (
@@ -15,6 +16,7 @@ const SearchFilter = async () => {
               <SearchInput />
             </div>
             <CartButton />
+            <OrderLink />
           </div>
           <Categories />
           <div className="w-full bg-white flex">

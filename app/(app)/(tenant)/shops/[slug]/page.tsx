@@ -107,7 +107,6 @@ const Page = async ({ params }: Props) => {
       color: theme.text,
       fontFamily: font.body,
     }
-    console.log('finalSectins', finalSections)
     return (
       <div style={tenantStyle} data-theme={themePreset} data-font={fontPreset}>
         <SectionRenderer sections={finalSections} plan={plan} />

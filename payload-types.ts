@@ -78,6 +78,11 @@ export interface Config {
     templates: Template
     'shop-templates': ShopTemplate
     shopcategories: Shopcategory
+    orders: Order
+    'order-counter': OrderCounter
+    stripeWebhookEvents: StripeWebhookEvent
+    'delivery-partners': DeliveryPartner
+    branch: Branch
     'payload-kv': PayloadKv
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
@@ -101,6 +106,11 @@ export interface Config {
     templates: TemplatesSelect<false> | TemplatesSelect<true>
     'shop-templates': ShopTemplatesSelect<false> | ShopTemplatesSelect<true>
     shopcategories: ShopcategoriesSelect<false> | ShopcategoriesSelect<true>
+    orders: OrdersSelect<false> | OrdersSelect<true>
+    'order-counter': OrderCounterSelect<false> | OrderCounterSelect<true>
+    stripeWebhookEvents: StripeWebhookEventsSelect<false> | StripeWebhookEventsSelect<true>
+    'delivery-partners': DeliveryPartnersSelect<false> | DeliveryPartnersSelect<true>
+    branch: BranchSelect<false> | BranchSelect<true>
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
@@ -177,6 +187,7 @@ export interface Shop {
    * Stripe connected account ID
    */
   stripeAccountId?: string | null
+  stripConnectStatus?: ('notconnected' | 'verified') | null
   /**
    * Stripe payments activation status
    */
@@ -808,6 +819,280 @@ export interface ShopTemplate {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string
+  tenant?: (string | null) | Shop
+  /**
+   * Auto-incremented unique order number
+   */
+  orderNumber?: number | null
+  /**
+   * Customer who placed the order
+   */
+  customer: string | User
+  /**
+   * Customer full name captured at checkout
+   */
+  customerName?: string | null
+  /**
+   * Customer phone number captured at checkout
+   */
+  customerPhone?: string | null
+  /**
+   * Customer billing/contact address from checkout
+   */
+  billingAddress?: string | null
+  /**
+   * Assign a delivery partner (optional initially)
+   */
+  deliveryPartner?: (string | null) | DeliveryPartner
+  /**
+   * Assign a delivery branch responsible for this order
+   */
+  deliveryBranch?: (string | null) | Branch
+  /**
+   * Products included in this order
+   */
+  items?:
+    | {
+        product: string | Product
+        quantity: number
+        /**
+         * Variant ID if applicable
+         */
+        variantId?: string | null
+        /**
+         * Amount for this item
+         */
+        amount: number
+        id?: string | null
+      }[]
+    | null
+  /**
+   * Total order amount in smallest currency unit
+   */
+  totalAmount: number
+  /**
+   * Full delivery address / location pin
+   */
+  deliveryLocation: {
+    /**
+     * Full text address for deliverylocation
+     */
+    address: string
+    /**
+     * [longitude, latitude]
+     */
+    coordinates: {
+      value?: number | null
+      id?: string | null
+    }[]
+  }
+  /**
+   * Special instructions for delivery
+   */
+  instructions?: string | null
+  /**
+   * Current status of the order
+   */
+  orderStatus?: ('pending' | 'accepted' | 'in-transit' | 'delivered' | 'cancelled') | null
+  /**
+   * Refund status for this order
+   */
+  refundStatus?: ('none' | 'requested' | 'processed' | 'refunded') | null
+  /**
+   * Details about order cancellation if applicable
+   */
+  cancellation?: {
+    /**
+     * Reason for cancellation
+     */
+    reason?: string | null
+    /**
+     * Is a cancellation reason required?
+     */
+    required?: boolean | null
+    /**
+     * Date/time the order was cancelled
+     */
+    cancelledAt?: string | null
+  }
+  /**
+   * Current payment status
+   */
+  paymentStatus?: ('pending' | 'paid' | 'failed' | 'refunded') | null
+  /**
+   * Stripe checkout session ID
+   */
+  stripeSessionId?: string | null
+  /**
+   * Stripe payment intent ID
+   */
+  stripePaymentIntentId?: string | null
+  /**
+   * Payout status for the shop owner
+   */
+  payoutStatus?: ('pending' | 'processing' | 'completed' | 'failed') | null
+  /**
+   * Stripe transfer ID for payout
+   */
+  stripeTransferId?: string | null
+  /**
+   * Delivery fulfillment status
+   */
+  fulfillmentStatus?: ('pending' | 'shipped' | 'delivered' | 'cancelled') | null
+  /**
+   * Order creation timestamp
+   */
+  createdAt: string
+  /**
+   * Payment completion timestamp
+   */
+  paidAt?: string | null
+  /**
+   * Delivery completion timestamp
+   */
+  deliveredAt?: string | null
+  /**
+   * Payout sent timestamp
+   */
+  payoutAt?: string | null
+  updatedAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-partners".
+ */
+export interface DeliveryPartner {
+  id: string
+  /**
+   * Delivery partner's first name
+   */
+  firstName: string
+  /**
+   * Delivery partner's last name
+   */
+  lastName: string
+  /**
+   * Full name (auto-generated or manual)
+   */
+  name: string
+  /**
+   * Contact number of the delivery partner
+   */
+  phoneNumber: string
+  /**
+   * Branch under which this delivery partner operates
+   */
+  branch?: (string | null) | Branch
+  /**
+   * Primary vehicle used for deliveries
+   */
+  vehicleType: 'car' | 'bike' | 'scooter'
+  /**
+   * Current or default location of the delivery partner
+   */
+  location: {
+    /**
+     * GeoJSON type, always Point
+     */
+    type: string
+    /**
+     * [longitude, latitude]
+     */
+    coordinates: {
+      value?: number | null
+      id?: string | null
+    }[]
+  }
+  /**
+   * Has this delivery partner been verified for delivery acceptance?
+   */
+  isVerified?: boolean | null
+  /**
+   * Full address of the delivery partner
+   */
+  address?: string | null
+  /**
+   * Stripe connection status for payment acceptance
+   */
+  stripeStatus?: ('not-connected' | 'connected') | null
+  /**
+   * Stripe account ID for payments
+   */
+  stripeId?: string | null
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "branch".
+ */
+export interface Branch {
+  id: string
+  /**
+   * Branch name
+   */
+  name: string
+  /**
+   * Whether this branch is active
+   */
+  isActive?: boolean | null
+  /**
+   * Full address of the branch
+   */
+  address: string
+  /**
+   * Delivery partners associated with this branch
+   */
+  deliveryPartners?: (string | DeliveryPartner)[] | null
+  /**
+   * Geo location of the branch
+   */
+  location: {
+    /**
+     * GeoJSON type, always Point
+     */
+    type: string
+    /**
+     * [longitude, latitude]
+     */
+    coordinates: {
+      value?: number | null
+      id?: string | null
+    }[]
+  }
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "order-counter".
+ */
+export interface OrderCounter {
+  id: string
+  value: number
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripeWebhookEvents".
+ */
+export interface StripeWebhookEvent {
+  id: string
+  eventId: string
+  type: string
+  stripeObjectId?: string | null
+  livemode?: boolean | null
+  processedAt: string
+  updatedAt: string
+  createdAt: string
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -873,6 +1158,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'shopcategories'
         value: string | Shopcategory
+      } | null)
+    | ({
+        relationTo: 'orders'
+        value: string | Order
+      } | null)
+    | ({
+        relationTo: 'order-counter'
+        value: string | OrderCounter
+      } | null)
+    | ({
+        relationTo: 'stripeWebhookEvents'
+        value: string | StripeWebhookEvent
+      } | null)
+    | ({
+        relationTo: 'delivery-partners'
+        value: string | DeliveryPartner
+      } | null)
+    | ({
+        relationTo: 'branch'
+        value: string | Branch
       } | null)
   globalSlug?: string | null
   user: {
@@ -1086,6 +1391,7 @@ export interface ShopsSelect<T extends boolean = true> {
   organizationId?: T
   logo?: T
   stripeAccountId?: T
+  stripConnectStatus?: T
   paymentsActivated?: T
   isActive?: T
   template?: T
@@ -1411,6 +1717,136 @@ export interface ShopcategoriesSelect<T extends boolean = true> {
   showonexplore?: T
   slug?: T
   parent?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  tenant?: T
+  orderNumber?: T
+  customer?: T
+  customerName?: T
+  customerPhone?: T
+  billingAddress?: T
+  deliveryPartner?: T
+  deliveryBranch?: T
+  items?:
+    | T
+    | {
+        product?: T
+        quantity?: T
+        variantId?: T
+        amount?: T
+        id?: T
+      }
+  totalAmount?: T
+  deliveryLocation?:
+    | T
+    | {
+        address?: T
+        coordinates?:
+          | T
+          | {
+              value?: T
+              id?: T
+            }
+      }
+  instructions?: T
+  orderStatus?: T
+  refundStatus?: T
+  cancellation?:
+    | T
+    | {
+        reason?: T
+        required?: T
+        cancelledAt?: T
+      }
+  paymentStatus?: T
+  stripeSessionId?: T
+  stripePaymentIntentId?: T
+  payoutStatus?: T
+  stripeTransferId?: T
+  fulfillmentStatus?: T
+  createdAt?: T
+  paidAt?: T
+  deliveredAt?: T
+  payoutAt?: T
+  updatedAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "order-counter_select".
+ */
+export interface OrderCounterSelect<T extends boolean = true> {
+  value?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripeWebhookEvents_select".
+ */
+export interface StripeWebhookEventsSelect<T extends boolean = true> {
+  eventId?: T
+  type?: T
+  stripeObjectId?: T
+  livemode?: T
+  processedAt?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "delivery-partners_select".
+ */
+export interface DeliveryPartnersSelect<T extends boolean = true> {
+  firstName?: T
+  lastName?: T
+  name?: T
+  phoneNumber?: T
+  branch?: T
+  vehicleType?: T
+  location?:
+    | T
+    | {
+        type?: T
+        coordinates?:
+          | T
+          | {
+              value?: T
+              id?: T
+            }
+      }
+  isVerified?: T
+  address?: T
+  stripeStatus?: T
+  stripeId?: T
+  updatedAt?: T
+  createdAt?: T
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "branch_select".
+ */
+export interface BranchSelect<T extends boolean = true> {
+  name?: T
+  isActive?: T
+  address?: T
+  deliveryPartners?: T
+  location?:
+    | T
+    | {
+        type?: T
+        coordinates?:
+          | T
+          | {
+              value?: T
+              id?: T
+            }
+      }
   updatedAt?: T
   createdAt?: T
 }

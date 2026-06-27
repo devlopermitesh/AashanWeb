@@ -4,9 +4,14 @@ import { Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { currencyFormatter } from '@/utils/currencyFormat'
 import type { ProductDetailColorOption } from './product-detail-types'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface ProductDetailsPurchaseProps {
   name: string
+  authroImageUrl: string
+  authorSlug: string
+  authorUsername: string
   categoryLabel: string
   rating: number
   reviewCount: number
@@ -28,6 +33,9 @@ const clampQuantity = (value: number, stockCount: number): number =>
 
 export const ProductDetailsPurchase = ({
   name,
+  authroImageUrl,
+  authorSlug,
+  authorUsername,
   categoryLabel,
   rating,
   reviewCount,
@@ -71,7 +79,21 @@ export const ProductDetailsPurchase = ({
       </div>
 
       <h1 className="text-2xl font-black leading-tight">{name}</h1>
-
+      {/* Author */}
+      <div className="flex items-center gap-2 my-2 ">
+        <div className="relative h-6 w-6 flex-shrink-0 overflow-hidden rounded-full border-2 border-black ">
+          <Image
+            src={authroImageUrl}
+            alt={authorUsername}
+            fill
+            className="object-cover"
+            sizes="24px"
+          />
+        </div>
+        <Link href={`/shops/${authorSlug}`}>
+          <span className="truncate text-sm font-bold underline">@{authorUsername}</span>
+        </Link>
+      </div>
       <div className="mt-4 flex flex-wrap items-baseline gap-2 border-y-2 border-black py-3">
         <p className="text-2xl font-black">{currencyFormatter.format(price)}</p>
         {originalPrice > price && (

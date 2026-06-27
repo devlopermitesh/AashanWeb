@@ -1,15 +1,12 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQueries } from '@tanstack/react-query'
+import { useMutation, useQueries } from '@tanstack/react-query'
 import { CreditCard, MapPinned, PackageCheck, Sparkles } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 import { useTRPC } from '@/components/providers/TrcpProvider'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
@@ -20,6 +17,12 @@ import {
   FormLabel,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
+import {
+  CHECKOUT_FREE_SHIPPING_THRESHOLD,
+  CHECKOUT_SHIPPING_PRICE,
+  checkoutFormSchema,
+  type CheckoutFormValues,
+} from '@/modules/checkout/lib/checkout'
 import useCart from '@/modules/checkout/store/use-cart'
 import type { CartItem } from '@/modules/checkout/store/use-cart'
 import CheckoutFormField from '@/modules/checkout/ui/components/CheckoutFormField'
@@ -30,37 +33,13 @@ import CheckoutOrderSummary, {
 import CheckoutSectionCard from '@/modules/checkout/ui/components/CheckoutSectionCard'
 import CheckoutTextareaField from '@/modules/checkout/ui/components/CheckoutTextareaField'
 import {
-  checkoutActionClass,
   checkoutCardClass,
   checkoutPanelClass,
   checkoutPillClass,
 } from '@/modules/checkout/ui/components/checkout-styles'
 import { currencyFormatter } from '@/utils/currencyFormat'
-const SHEEPING_PRICE = 79
-const checkoutSchema = z
-  .object({
-    firstName: z.string().trim().min(2, 'Enter at least 2 characters.'),
-    lastName: z.string().trim().min(1, 'Last name is required.'),
-    mobileNumber: z
-      .string()
-      .trim()
-      .regex(/^\d{10}$/, 'Use a valid 10 digit mobile number.'),
-    customerAddress: z.string().trim().min(10, 'Add a fuller pickup or billing address.'),
-    deliverySameAsCustomer: z.boolean(),
-    deliveryAddress: z.string().trim(),
-    instructions: z.string().trim().max(300, 'Keep instructions under 300 characters.'),
-  })
-  .superRefine((values, ctx) => {
-    if (!values.deliverySameAsCustomer && values.deliveryAddress.length < 10) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['deliveryAddress'],
-        message: 'Add a fuller delivery address.',
-      })
-    }
-  })
-
-type CheckoutFormValues = z.infer<typeof checkoutSchema>
+import AddressModalPicker from './AddressModelPicker'
+import type { AddressResult } from '../AddressPicker'
 
 type CheckoutCartEntry = {
   item: CartItem
@@ -115,10 +94,20 @@ const resolveShopSections = (
 const CheckOutView = () => {
   const trpc = useTRPC()
   const { shopCart, removeProduct, getItemCount } = useCart()
-  const [submissionNote, setSubmissionNote] = useState<string | null>(null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [addressModalOpen, setAddressModalOpen] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<AddressResult | null>(null)
+
+  const checkoutMutation = useMutation(
+    trpc.checkout.checkout.mutationOptions({
+      onError: (error) => {
+        setCheckoutError(error.message)
+      },
+    })
+  )
 
   const form = useForm<CheckoutFormValues>({
-    resolver: zodResolver(checkoutSchema),
+    resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
@@ -127,11 +116,15 @@ const CheckOutView = () => {
       deliverySameAsCustomer: true,
       deliveryAddress: '',
       instructions: '',
+      latitude: undefined,
+      longitude: undefined,
     },
   })
 
   const sameAsCustomer = form.watch('deliverySameAsCustomer')
   const customerAddress = form.watch('customerAddress')
+  const latitude = form.watch('latitude')
+  const longitude = form.watch('longitude')
 
   useEffect(() => {
     if (!sameAsCustomer) {
@@ -144,7 +137,11 @@ const CheckOutView = () => {
       shouldValidate: true,
     })
   }, [customerAddress, form, sameAsCustomer])
-
+  useEffect(() => {
+    if (!form.getValues('longitude') || !form.getValues('latitude')) {
+      setAddressModalOpen(true)
+    }
+  }, [form])
   const cartEntries: CheckoutCartEntry[] = shopCart.flatMap((shop) =>
     shop.items.map((item) => ({ item }))
   )
@@ -166,14 +163,27 @@ const CheckOutView = () => {
       ),
     0
   )
-  const shippingFee = totalItems === 0 ? 0 : subtotal >= 1499 ? 0 : SHEEPING_PRICE
+  const shippingFee =
+    totalItems === 0 || subtotal >= CHECKOUT_FREE_SHIPPING_THRESHOLD ? 0 : CHECKOUT_SHIPPING_PRICE
   const grandTotal = subtotal + shippingFee
   const hasPendingProducts = productQueries.some((query) => query.isLoading)
 
-  const handleSubmit = (values: CheckoutFormValues) => {
-    setSubmissionNote(
-      `Validated for ${values.firstName} ${values.lastName}. Payment handoff is the next integration step.`
-    )
+  const handleSubmit = async (values: CheckoutFormValues) => {
+    setCheckoutError(null)
+
+    const result = await checkoutMutation.mutateAsync({
+      orders: shopCart.map((shop) => ({
+        shopId: shop.shopId,
+        items: shop.items.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+        })),
+      })),
+      userInfo: values,
+    })
+
+    window.location.assign(result.checkoutUrl)
   }
 
   return (
@@ -185,10 +195,42 @@ const CheckOutView = () => {
       <div className="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit, (errors) => {
+              if (errors.latitude || errors.longitude) {
+                setAddressModalOpen(true)
+              }
+            })}
             className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]"
           >
             <div className="space-y-6">
+              <AddressModalPicker
+                open={addressModalOpen}
+                onOpenChange={setAddressModalOpen}
+                value={selectedLocation}
+                onConfirm={(address) => {
+                  setSelectedLocation(address)
+                  form.setValue('latitude', address.latitude, {
+                    shouldDirty: true,
+                    shouldTouch: false,
+                    shouldValidate: true,
+                  })
+                  form.setValue('longitude', address.longitude, {
+                    shouldDirty: true,
+                    shouldTouch: false,
+                    shouldValidate: true,
+                  })
+
+                  const existingCustomerAddress = form.getValues('customerAddress')?.trim() ?? ''
+                  if (existingCustomerAddress.length < 10) {
+                    form.setValue('customerAddress', address.address_text, {
+                      shouldDirty: true,
+                      shouldTouch: false,
+                      shouldValidate: true,
+                    })
+                  }
+                }}
+              />
+
               <section className={cn(checkoutCardClass, 'overflow-hidden bg-[#fff4d6]')}>
                 <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
                   <div>
@@ -262,6 +304,39 @@ const CheckOutView = () => {
                 </div>
               </CheckoutSectionCard>
 
+              <section className={cn(checkoutCardClass, 'bg-white p-5')}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-xs font-black uppercase tracking-[0.08em] text-[#4b5563]">
+                      Delivery pin
+                    </p>
+                    <p className="text-sm font-black text-black">
+                      {selectedLocation?.address_text ||
+                        (latitude && longitude
+                          ? `Pinned coordinates: ${Number(latitude).toFixed(5)}, ${Number(longitude).toFixed(5)}`
+                          : 'No location selected yet')}
+                    </p>
+                    {form.formState.errors.latitude || form.formState.errors.longitude ? (
+                      <p className="text-xs font-black text-[#b91c1c]">
+                        Please choose a delivery pin on the map to continue.
+                      </p>
+                    ) : (
+                      <p className="text-xs font-bold text-[#4b5563]">
+                        Helps delivery find the exact entrance even if the typed address is long.
+                      </p>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setAddressModalOpen(true)}
+                    className="w-full rounded-none border-4 border-black bg-[#dff2ff] px-4 py-3 text-sm font-black text-black shadow-[6px_6px_0_0_#000] transition-transform hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[8px_8px_0_0_#000] sm:w-auto"
+                  >
+                    {selectedLocation ? 'Edit location' : 'Choose on map'}
+                  </button>
+                </div>
+              </section>
+
               <CheckoutSectionCard
                 eyebrow="Step 2"
                 title="Address details"
@@ -328,6 +403,12 @@ const CheckOutView = () => {
                   />
                 </div>
               </CheckoutSectionCard>
+
+              {checkoutError ? (
+                <section className={cn(checkoutCardClass, 'border-[#b91c1c] bg-[#fff0f0] p-5')}>
+                  <p className="text-sm font-black text-[#7f1d1d]">{checkoutError}</p>
+                </section>
+              ) : null}
             </div>
 
             <CheckoutOrderSummary
@@ -338,7 +419,7 @@ const CheckOutView = () => {
               grandTotal={grandTotal}
               hasPendingProducts={hasPendingProducts}
               onRemoveItem={removeProduct}
-              isSubmitting={form.formState.isSubmitting}
+              isSubmitting={form.formState.isSubmitting || checkoutMutation.isPending}
             />
           </form>
         </Form>

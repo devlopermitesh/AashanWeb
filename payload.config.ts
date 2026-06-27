@@ -19,6 +19,11 @@ import { Templates } from './collections/Templates'
 import { ShopTemplates } from './collections/ShopTemplates'
 import { ShopCategories } from './collections/ShopCategories'
 import { ProductCollections } from './collections/Productcollection'
+import { Orders } from './collections/Order'
+import { OrderCounter } from './collections/OrderCounter'
+import { DeliveryPartner } from './collections/DeliveryPartner'
+import { Branch } from './collections/Branch'
+import StripeWebhookEvents from './collections/StripeWebhookEvents'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 export default buildConfig({
@@ -59,6 +64,11 @@ export default buildConfig({
     Templates,
     ShopTemplates,
     ShopCategories,
+    Orders,
+    OrderCounter,
+    StripeWebhookEvents,
+    DeliveryPartner,
+    Branch,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -88,6 +98,7 @@ export default buildConfig({
         products: {},
         shopcategories: {},
         media: {},
+        orders: {},
       },
       tenantsArrayField: {
         includeDefaultField: false,

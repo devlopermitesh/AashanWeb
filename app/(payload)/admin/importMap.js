@@ -25,6 +25,7 @@ import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { AssignTenantFieldTrigger as AssignTenantFieldTrigger_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { WatchTenantCollection as WatchTenantCollection_1d0591e3cf4f332c83a86da13a0de59a } from '@payloadcms/plugin-multi-tenant/client'
 import { ColorPicker as ColorPicker_a9e14108f183e1184ded9cff2a219c7b } from '@/modules/admin/ui/colorpicker'
+import { AddressField as AddressField_7ebca40a4a404018f0040f064203fe4f } from '@/modules/admin/ui/AddressPicker/AddressField'
 import { LogoutBtn as LogoutBtn_bb6ed0bdde670c4454223b6996195d2e } from '../../../modules/admin/ui/logout'
 import { TenantSelector as TenantSelector_d6d5f193a167989e2ee7d14202901e62 } from '@payloadcms/plugin-multi-tenant/rsc'
 import { CustomeClerkProvider as CustomeClerkProvider_3b82b439057a6d078584cf8e2623c9a5 } from '../../../components/providers/CustomeClerkProvider'
@@ -85,6 +86,8 @@ export const importMap = {
   '@payloadcms/plugin-multi-tenant/client#WatchTenantCollection':
     WatchTenantCollection_1d0591e3cf4f332c83a86da13a0de59a,
   '@/modules/admin/ui/colorpicker#ColorPicker': ColorPicker_a9e14108f183e1184ded9cff2a219c7b,
+  '@/modules/admin/ui/AddressPicker/AddressField#AddressField':
+    AddressField_7ebca40a4a404018f0040f064203fe4f,
   './modules/admin/ui/logout#LogoutBtn': LogoutBtn_bb6ed0bdde670c4454223b6996195d2e,
   '@payloadcms/plugin-multi-tenant/rsc#TenantSelector':
     TenantSelector_d6d5f193a167989e2ee7d14202901e62,

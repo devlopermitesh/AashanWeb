@@ -309,8 +309,8 @@ const CheckoutOrderSummary = ({
           </Button>
 
           <p className="text-center text-xs font-bold leading-5 text-[#4b5563]">
-            Final payment handoff is still pending backend integration. This screen currently
-            validates and prepares checkout details only.
+            Payment continues on Stripe after this step. Orders are created first with pending
+            payment status and will be finalized later from webhook handling.
           </p>
         </div>
       </div>
