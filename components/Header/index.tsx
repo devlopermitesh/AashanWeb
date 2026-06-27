@@ -8,7 +8,6 @@ import LinkItem from './LinkItem'
 import MobileNavMenu from './MobileNavMenu'
 import { SignedOut, useAuth, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
-import CartSheet from './Cartsheet'
 
 const Header = () => {
   const [open, setOpen] = useState(false)
@@ -68,8 +67,6 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {open && <MobileNavMenu close={() => setOpen(false)} isOpen={open} />}
-      {/* Cart sheet */}
-      <CartSheet />
     </header>
   )
 }
