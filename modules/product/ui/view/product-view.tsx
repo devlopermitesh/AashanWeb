@@ -3,7 +3,7 @@ import ProductSearchFilter from '../product-searchfilter'
 import ProductSort from '../product-sort'
 import { ProductList, ProductListSkeleton } from '../product-list'
 
-export const ProductView = ({ category }: { category: string }) => {
+export const ProductView = ({ category }: { category: string | undefined }) => {
   return (
     <div className="px-4 lg:px-12 py-8 w-full flex flex-col ">
       {/* sort filter */}
