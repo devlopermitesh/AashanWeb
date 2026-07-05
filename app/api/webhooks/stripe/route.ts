@@ -131,7 +131,7 @@ const markOrdersPaid = async (
 ) => {
   const now = new Date().toISOString()
 
-  await Promise.allSettled(
+  await Promise.all(
     orders.map((order) =>
       payload.update({
         collection: 'orders',
@@ -164,10 +164,11 @@ export async function POST(req: Request) {
   }
 
   const payload = await getPayloadClient()
+  let processedEventId: string | null = null
 
   // Idempotency: store the Stripe event id so retries don't re-send emails.
   try {
-    await payload.create({
+    const processedEvent = await payload.create({
       collection: 'stripeWebhookEvents',
       overrideAccess: true,
       data: {
@@ -178,6 +179,7 @@ export async function POST(req: Request) {
         processedAt: new Date().toISOString(),
       },
     })
+    processedEventId = processedEvent.id
   } catch (error: unknown) {
     // Duplicate key means we've already processed this event successfully.
     const message = error instanceof Error ? error.message : ''
@@ -227,7 +229,32 @@ export async function POST(req: Request) {
 
     const ordersToUpdate = pendingOrFailedOrders.filter((order) => order.paymentStatus !== 'paid')
     if (ordersToUpdate.length > 0) {
-      await markOrdersPaid(payload, ordersToUpdate, paymentIntentId)
+      try {
+        await markOrdersPaid(payload, ordersToUpdate, paymentIntentId)
+      } catch (error: unknown) {
+        console.error('stripe webhook: failed to mark orders paid', {
+          sessionId,
+          orderIds: ordersToUpdate.map((order) => order.id),
+          error,
+        })
+
+        if (processedEventId) {
+          await payload
+            .delete({
+              collection: 'stripeWebhookEvents',
+              id: processedEventId,
+              overrideAccess: true,
+            })
+            .catch((deleteError) => {
+              console.error('stripe webhook: failed to clear idempotency event', {
+                eventId: event.id,
+                deleteError,
+              })
+            })
+        }
+
+        return new Response('Failed to update orders', { status: 500 })
+      }
     }
 
     // Only send emails if this webhook transitioned orders to `paid`.
