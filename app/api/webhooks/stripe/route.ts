@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic'
 
 type CheckoutSession = Stripe.Checkout.Session
 type WebhookError = Error & { statusCode?: number }
+type PayloadClient = Awaited<ReturnType<typeof getPayloadClient>>
 
 const WEBHOOK_EVENTS = new Set<string>([
   'checkout.session.async_payment_failed',
@@ -62,6 +63,70 @@ const hasStatusCode = (error: unknown): error is WebhookError => {
 const getStripeObjectId = (event: Stripe.Event): string | undefined => {
   const stripeObject = event.data.object as { id?: unknown }
   return typeof stripeObject.id === 'string' ? stripeObject.id : undefined
+}
+
+const isDuplicateKeyError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : ''
+  return message.includes('duplicate') || message.includes('E11000')
+}
+
+const hasProcessedStripeEvent = async (
+  payload: PayloadClient,
+  eventId: string
+): Promise<boolean> => {
+  const result = await payload.find({
+    collection: 'stripeWebhookEvents',
+    overrideAccess: true,
+    limit: 1,
+    where: { eventId: { equals: eventId } },
+  })
+
+  return result.docs.length > 0
+}
+
+const markStripeEventProcessed = async (payload: PayloadClient, event: Stripe.Event) => {
+  try {
+    await payload.create({
+      collection: 'stripeWebhookEvents',
+      overrideAccess: true,
+      data: {
+        eventId: event.id,
+        type: event.type,
+        stripeObjectId: getStripeObjectId(event),
+        livemode: Boolean(event.livemode),
+        processedAt: new Date().toISOString(),
+      },
+    })
+  } catch (error: unknown) {
+    if (isDuplicateKeyError(error)) return
+    throw error
+  }
+}
+
+const findOrdersByStripeSession = async (
+  payload: PayloadClient,
+  sessionId: string
+): Promise<Order[]> => {
+  const orders: Order[] = []
+  let page = 1
+  let totalPages = 1
+
+  do {
+    const result = await payload.find({
+      collection: 'orders',
+      overrideAccess: true,
+      depth: 2,
+      limit: 100,
+      page,
+      where: { stripeSessionId: { equals: sessionId } },
+    })
+
+    orders.push(...(result.docs || []))
+    totalPages = result.totalPages || 1
+    page += 1
+  } while (page <= totalPages)
+
+  return orders
 }
 
 const getReceiptUrl = async (paymentIntentId?: string): Promise<string | undefined> => {
@@ -164,30 +229,8 @@ export async function POST(req: Request) {
   }
 
   const payload = await getPayloadClient()
-  let processedEventId: string | null = null
-
-  // Idempotency: store the Stripe event id so retries don't re-send emails.
-  try {
-    const processedEvent = await payload.create({
-      collection: 'stripeWebhookEvents',
-      overrideAccess: true,
-      data: {
-        eventId: event.id,
-        type: event.type,
-        stripeObjectId: getStripeObjectId(event),
-        livemode: Boolean(event.livemode),
-        processedAt: new Date().toISOString(),
-      },
-    })
-    processedEventId = processedEvent.id
-  } catch (error: unknown) {
-    // Duplicate key means we've already processed this event successfully.
-    const message = error instanceof Error ? error.message : ''
-    if (message.includes('duplicate') || message.includes('E11000')) {
-      return new Response('Already processed', { status: 200 })
-    }
-    console.error('stripe webhook idempotency write failed', { message })
-    // Proceed anyway; safer to finalize orders than to drop the event entirely.
+  if (await hasProcessedStripeEvent(payload, event.id)) {
+    return new Response('Already processed', { status: 200 })
   }
 
   const session = event.data.object as CheckoutSession
@@ -198,20 +241,14 @@ export async function POST(req: Request) {
   const sessionId = session.id
   const paymentIntentId = getPaymentIntentId(session)
 
-  const ordersResult = await payload.find({
-    collection: 'orders',
-    overrideAccess: true,
-    depth: 2,
-    limit: 50,
-    where: { stripeSessionId: { equals: sessionId } },
-  })
-  const orders: Order[] = ordersResult.docs || []
+  const orders = await findOrdersByStripeSession(payload, sessionId)
 
   if (orders.length === 0) {
     console.warn('stripe webhook: no orders found for session', {
       sessionId,
       eventType: event.type,
     })
+    await markStripeEventProcessed(payload, event)
     return new Response('No orders found', { status: 200 })
   }
 
@@ -224,6 +261,7 @@ export async function POST(req: Request) {
     const isPaid =
       session.payment_status === 'paid' || event.type === 'checkout.session.async_payment_succeeded'
     if (!isPaid) {
+      await markStripeEventProcessed(payload, event)
       return new Response('Session not paid', { status: 200 })
     }
 
@@ -238,21 +276,6 @@ export async function POST(req: Request) {
           error,
         })
 
-        if (processedEventId) {
-          await payload
-            .delete({
-              collection: 'stripeWebhookEvents',
-              id: processedEventId,
-              overrideAccess: true,
-            })
-            .catch((deleteError) => {
-              console.error('stripe webhook: failed to clear idempotency event', {
-                eventId: event.id,
-                deleteError,
-              })
-            })
-        }
-
         return new Response('Failed to update orders', { status: 500 })
       }
     }
@@ -265,7 +288,7 @@ export async function POST(req: Request) {
 
       if (customerEmail) {
         const { subject, html, text } = buildCustomerOrderEmail({
-          orders,
+          orders: ordersToUpdate,
           customerEmail,
           receiptUrl,
           serverUrl,
@@ -283,7 +306,7 @@ export async function POST(req: Request) {
 
       // Notify each shop owner about their order only.
       const ordersByShop = new Map<string, Order[]>()
-      for (const order of orders) {
+      for (const order of ordersToUpdate) {
         const tenant = order?.tenant
         const shopId = typeof tenant === 'string' ? tenant : tenant?.id
         if (!shopId) continue
@@ -314,6 +337,7 @@ export async function POST(req: Request) {
       )
     }
 
+    await markStripeEventProcessed(payload, event)
     return new Response('Processed', { status: 200 })
   }
 
@@ -322,6 +346,7 @@ export async function POST(req: Request) {
     if (cancellable.length > 0) {
       await cancelOrders(payload, cancellable, 'Stripe async payment failed')
     }
+    await markStripeEventProcessed(payload, event)
     return new Response('Processed', { status: 200 })
   }
 
@@ -330,8 +355,10 @@ export async function POST(req: Request) {
     if (cancellable.length > 0) {
       await cancelOrders(payload, cancellable, 'Stripe checkout session expired')
     }
+    await markStripeEventProcessed(payload, event)
     return new Response('Processed', { status: 200 })
   }
 
+  await markStripeEventProcessed(payload, event)
   return new Response('Processed', { status: 200 })
 }
