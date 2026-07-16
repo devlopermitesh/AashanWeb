@@ -1,0 +1,266 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 2px;
+}
+
+.layout {
+  display: 'flex';
+  gap: 12px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mapWrap {
+  border: 3px solid #000;
+  background: #fff;
+  box-shadow: 6px 6px 0 #000;
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .mapWrap {
+    height: 100%;
+  }
+}
+
+/* Input Row */
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.inputWrap {
+  position: relative;
+  flex: 1;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 3px solid #000;
+  border-radius: 0;
+  background: #fff7e8;
+  color: #000;
+  outline: none;
+  box-shadow: 4px 4px 0 #000;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+
+.input:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+/* Suggestions */
+.suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 0;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 6px 6px 0 #000;
+}
+
+.suggestionItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-bottom: 2px solid #000;
+}
+
+.suggestionItem:last-child {
+  border-bottom: none;
+}
+
+.suggestionItem:hover {
+  background: #dff2ff;
+}
+
+.suggestionPin {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.suggestionText {
+  font-size: 13px;
+  color: #000;
+  line-height: 1.4;
+}
+
+/* Clear Button */
+.clearBtn {
+  padding: 10px 16px;
+  font-size: 13px;
+  border: 3px solid #000;
+  border-radius: 0;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 4px 4px 0 #000;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+  flex-shrink: 0;
+}
+
+.clearBtn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+/* Status */
+.status {
+  font-size: 12px;
+  color: #111;
+  margin: 0;
+  padding-left: 2px;
+  min-height: 16px;
+}
+
+/* Map */
+.map {
+  width: 100%;
+  height: clamp(260px, 45vh, 520px);
+  border-radius: 0;
+  border: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Address Card */
+.card {
+  border: 3px solid #000;
+  border-radius: 0;
+  padding: 16px;
+  background: #ffe58f;
+  box-shadow: 6px 6px 0 #000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 0;
+  background: #000;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.cardAddr {
+  font-size: 13px;
+  font-weight: 800;
+  color: #000;
+  line-height: 1.5;
+}
+
+.cardMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metaItem {
+  background: #fff;
+  border-radius: 0;
+  border: 2px solid #000;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  font-size: 11px;
+  color: #111;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metaValue {
+  font-size: 13px;
+  font-weight: 800;
+  color: #000;
+  font-family: var(--font-geist-mono, monospace);
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 900;
+  border: 3px solid #000;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+
+.actionBtn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+.actionBtnSecondary {
+  background: #fff;
+  color: #000;
+  border-color: #000;
+}
+
+.actionBtnSecondary:hover {
+  background: #dff2ff;
+}

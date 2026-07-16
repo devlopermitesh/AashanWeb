@@ -41,6 +41,7 @@
     "client-only": "^0.0.1",
     "cloudinary": "^2.9.0",
     "graphql": "^16.8.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.564.0",
     "next": "16.1.6",
     "nodemailer": "^8.0.0",
@@ -53,6 +54,7 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.71.2",
     "server-only": "^0.0.1",
+    "stripe": "^20.4.1",
     "superjson": "^2.2.6",
     "svix": "^1.85.0",
     "tailwind-merge": "^3.4.0",
@@ -63,6 +65,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

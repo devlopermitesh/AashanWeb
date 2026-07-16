@@ -113,6 +113,15 @@ const Shops: CollectionConfig = {
       },
     },
     {
+      name: 'stripConnectStatus',
+      type: 'select',
+      options: [
+        { label: 'Not Connected', value: 'notconnected' },
+        { label: 'Verified', value: 'verified' },
+      ],
+      defaultValue: 'notconnected',
+    },
+    {
       name: 'paymentsActivated',
       type: 'checkbox',
       defaultValue: false,

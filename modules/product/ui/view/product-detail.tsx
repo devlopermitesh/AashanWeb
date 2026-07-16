@@ -12,7 +12,7 @@ import type {
 import useCart from '@/modules/checkout/store/use-cart'
 import BreadCrumbList from '@/components/Share/BreadCrumbList'
 import CartButton from '@/components/Share/CartButton'
-
+import placeholder from '@/public/placeholder.jpg'
 const REFUND_POLICY_LABEL: Record<string, string> = {
   '30-days': '30 days return policy',
   '15-days': '15 days return policy',
@@ -125,7 +125,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
   const tags = getTagNames(product.tags)
 
   const variantColors = useMemo(() => getVariantColors(product), [product])
-
+  const tenant = product.tenant
   const galleryImages = useMemo<ProductDetailImage[]>(() => {
     const seenSources = new Set<string>()
     const images: ProductDetailImage[] = []
@@ -244,6 +244,9 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
         />
         <ProductDetailsPurchase
           name={productName}
+          authroImageUrl={tenant?.logo?.url ?? placeholder.src}
+          authorSlug={tenant.slug}
+          authorUsername={tenant.name}
           categoryLabel={categoryLabel}
           rating={rating}
           reviewCount={reviewCount}
